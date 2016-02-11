@@ -1,0 +1,18 @@
+version: '2'
+
+services:
+  install:
+    image: nbrown/revealjs:latest
+
+    container_name: installing_docker
+
+    stdin_open: true
+    tty: true
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - $PWD/index.html:/reveal.js/index.html:ro
+      - $PWD/media:/reveal.js/media:ro
+      - $PWD/css/theme/custom.css:/reveal.js/css/theme/custom.css:ro

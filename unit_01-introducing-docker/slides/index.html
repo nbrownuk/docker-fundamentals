@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Docker Fundamentals</title>
+
+		<meta name="description" content="Unit 1: Introducing Docker">
+		<meta name="author" content="Nigel Brown">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/custom.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+
+                <section class="cover" data-background="media/Felixstowe_Port.jpg">
+					<h2 style="color:white; text-shadow: 0 1px 0 black">Docker Fundamentals</h2>
+				</section>
+
+				<section id="title">
+					<h2>Unit 1</h2>
+					<h2>Introducing Docker</h2>
+				</section>
+
+				<section id="unit_outline">
+					<section>
+						<div>
+							<h2>Objectives</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>Upon completion of this unit, you will be able to:</p>
+							<ul>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="1">Describe what Docker is, its purpose, and who is responsible for it</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="2">Differentiate between the nature and purpose of containers and virtual machines</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="3">Pinpoint the benefits of, and use cases for, Docker</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="4">Outline a brief history of containing processes</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="5">Provide some detail regarding the Linux kernel capabilities that Docker utilises</li>
+							</ul>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Agenda</h2>
+						</div>
+						<div style="text-align:left">
+							<p>The following topics will be covered in this unit:</p>
+							<ul>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="1">Overview</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="2">Software Delivery Idiosyncrasies</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="3">Containers vs Virtual Machines</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="4">Benefits and Use Cases</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="5">History of Container Technologies</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="6">Linux Kernel Capabilities</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="7">Lab Exercise: Containers from First Principles</li>
+							</ul>
+						</div>
+					</section>
+				</section>
+
+				<section id="overview">
+					<section>
+						<div>
+							<h2>What is Docker?</h2>
+						</div>
+						<div>
+							<img src="media/Docker_Logo.svg" alt="Docker Logo" />
+							<p>Docker is a platform for managing the delivery of distributed applications in <strong>lightweight</strong>, <strong>portable</strong>, <strong>self sufficient</strong> containers</p>
+							<p>Containers are an abstraction of capabilities built into the Linux kernel</p>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Who is Behind Docker?</h2>
+						</div>
+						<div style="width:100%">
+							<div style="width:50%; float:left">
+								<img src="media/DGAB_Logos.svg" alt="DGAB Participants" />
+							</div>
+							<div style="width:50%; float:right; text-align:left">
+								<p>Docker is open source software, developed and maintained by a community</p>
+								<p>Originally created as part of a PaaS offering, provided by dotCloud Inc.</p>
+								<p>Project governed by the Docker Governance and Advisory Board (DGAB)</p>
+							</div>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Docker's Popularity</h2>
+						</div>
+						<div>
+							<img src="media/Exponential_Growth.svg" alt="Docker Popularity" />
+						</div>
+						<div style="float:right">
+							<small><i>Approximate figures as of November 2015</i></small>
+						</div>
+					</section>
+				</section>
+
+				<section id="software_delivery_idiosyncrasies">
+					<section>
+						<div>
+							<h2>The Analogy</h2>
+						</div>
+						<div style="width:100%">
+							<div class="fragment fade-in" data-fragment-index="1" style="width:50%; float:left">
+								<img src="media/Loading_the_Hold.jpg" alt="Loading Hold" />
+							</div>
+							<div class="fragment fade-in" data-fragment-index="2" style="width:50%; float:right">
+								<img src="media/Container_Ship.jpg" alt="Container Ship" />
+							</div>
+						</div>
+						<div style="width:100%">
+							<div class="fragment fade-in" data-fragment-index="1" style="width:50%; float:left">
+								<p>Before 20th century, freight transportation was inefficient and hazardous</p>
+							</div>
+							<div class="fragment fade-in" data-fragment-index="2" style="width:50%; float:right">
+								<p>The inter-modal shipping container revolutionised freight transportation</p>
+							</div>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Software Application Dependencies</h2>
+						</div>
+						<div>
+							<img src="media/Software_App_Dependencies.svg" alt="Software Dependencies" />
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Docker and Containers</h2>
+						</div>
+						<div style="width:100%">
+							<img src="media/Build_Ship_Run.svg" alt="Build Ship Run" />
+						</div>
+						<div style="clear:both">
+							<p>The packaged container is guaranteed to run unchanged on any platform that runs the Docker Engine</p>
+						</div>
+						<div>
+							<p>Significantly reduces the friction between development, integration, staging and production environments</p>
+						</div>
+					</section>
+				</section>
+
+				<section id="containers_vs_vms">
+					<section>
+					<div>
+						<h2>Containers vs VMs</h2>
+					</div>
+					<div>
+						<img src="media/VM_vs_Container.svg" alt="VM vs Container" />
+					</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Containers vs VMs</h2>
+						</div>
+						<div style="width:100%">
+							<div style="width:48%; float:left">
+								<img src="media/Fat_Thin_Mirror.jpg" alt="Fat Thin Mirror" />
+							</div>
+							<div style="width:50%; float:right; text-align:left">
+								<p>VMs are inherently <strong>more secure</strong> than containers</p>
+								<p>VMs are better equipped to run <strong>multiple processes</strong></p>
+								<p>Containers are significantly <strong>quicker</strong> to spin up than VMs, and occupy a <strong>smaller</strong> footprint</p>
+							</div>
+						</div>
+						<div class="fragment current-visible" data-fragment-index="1" style="clear:both">
+							<p>The choice depends on the use case: horses for courses</p>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Microservices</h2>
+						</div>
+						<div style="width:100%">
+							<div style="width:45%; float:left">
+								<img src="media/Microservices.svg" alt="Microservices" />
+							</div>
+							<div style="width:55%; float:right; text-align:left">
+								<p>Docker has not been designed as a leaner replacement for virtual machines</p>
+								<p>Docker's aim is to facilitate the execution of <strong>microservices</strong></p>
+								<p>Not a physical constraint, but a matter of <strong>ideology</strong></p>
+							</div>
+						</div>
+					</section>
+				</section>
+
+				<section id="benefits_and_use_cases">
+					<section>
+						<div>
+							<h2>Docker Benefits</h2>
+						</div>
+						<div style="width:100%">
+							<div style="width:50%; float:left">
+								<img src="media/Benefits.svg" alt="Benefits" />
+							</div>
+							<div style="width:50%; float:right; text-align:left">
+								<p>Enhanced <strong>business agility</strong> through expeditious application deployment</p>
+								<p><strong>Reduced costs</strong>, less reliance on expensive software licences</p>
+								<p>Increased workload density - <strong>better return</strong> on existing compute resources</p>
+							</div>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Docker Use Cases</h2>
+						</div>
+						<div style="width:100%">
+							<div style="width:25%; float:left">
+								<img src="media/Cogs.svg" alt="Use Cases" />
+							</div>
+							<div style="width:70%; float:right; text-align:left">
+								<p>Standardised, reproduceable development environments</p>
+								<p>Microservices aids delivery of faster, better quality software</p>
+								<p>Incorporation into continuous integration and continuous delivery workflows</p>
+								<p>Safe experimentation with software components and versions</p>
+							</div>
+						</div>
+					</section>
+				</section>
+
+				<section id="container_history">
+					<section>
+						<div>
+							<h2>Container History</h2>
+						</div>
+						<div>
+							<img src="media/Container_History_Part1.svg" alt="Container History - Early" />
+							<p>Containing processes is not a new phenomenon!</p>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Container History</h2>
+						</div>
+						<div>
+							<img src="media/Container_History_Part2.svg" alt="Container History - Later" />
+							<p>Linux kernel features for containers first appeared after the millennium, and matured very recently</p>
+						</div>
+					</section>
+				</section>
+
+				<section id="kernel_capabilities">
+					<section>
+						<div>
+							<h2>Linux Namespaces</h2>
+						</div>
+						<div class="fragment fade-in" data-fragment-index="1">
+							<img src="media/Linux_Namespaces.svg" alt="Linux Namespaces" />
+						</div>
+						<div>
+							<p>A namespace in Linux is a kernel mechanism for isolating a process or processes from specific system-related resources</p>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>MNT Namespace</h2>
+						</div>
+						<div style="width:100%">
+							<div style="width:25%; float:left">
+								<img src="media/MNT_Namespace.svg" alt="MNT Namespace" />
+							</div>
+							<div style="width:75%; float:right; text-align:left">
+								<h5>Description</h5>
+								<p>MNT namespaces isolate the set of filesystem mount points seen by a group of processes</p>
+								<h5>Kernel</h5>
+								<p>The MNT namespace was introduced in Linux kernel version 2.4.19 (03-Aug-2002)</p>
+								<h5>Clone Flag</h5>
+								<p>CLONE_NEWNS</p>
+							</div>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>USER Namespace</h2>
+						</div>
+						<div style="width:100%">
+							<div style="width:25%; float:left">
+								<img src="media/USER_Namespace.svg" alt="USER Namespace" />
+							</div>
+							<div style="width:75%; float:right; text-align:left">
+								<h5>Description</h5>
+								<p>USER namespaces isolate the user and group ID number space</p>
+								<h5>Kernel</h5>
+								<p>The USER namespace was introduced in Linux kernel version 2.6.23 (09-Oct-2007), but only properly completed in version 3.8 (18-Feb-2013)</p>
+								<h5>Clone Flag</h5>
+								<p>CLONE_NEWUSER</p>
+							</div>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>PID Namespace</h2>
+						</div>
+						<div style="width:100%">
+							<div style="width:25%; float:left">
+								<img src="media/PID_Namespace.svg" alt="PID Namespace" />
+							</div>
+							<div style="width:75%; float:right; text-align:left">
+								<h5>Description</h5>
+								<p>PID namespaces isolate the process ID number space</p>
+								<h5>Kernel</h5>
+								<p>The PID namespace was introduced in Linux kernel version 2.6.24 (24-Jan-2008)</p>
+								<h5>Clone Flag</h5>
+								<p>CLONE_NEWPID</p>
+							</div>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>NET Namespace</h2>
+						</div>
+						<div style="width:100%">
+							<div style="width:25%; float:left">
+								<img src="media/NET_Namespace.svg" alt="NET Namespace" />
+							</div>
+							<div style="width:75%; float:right; text-align:left">
+								<h5>Description</h5>
+								<p>NET namespaces isolate the networking stack</p>
+								<h5>Kernel</h5>
+								<p>The NET namespace was introduced in Linux kernel version 2.6.24 (24-Jan-2008), but only properly completed in version 2.6.29 (23-Mar-2009)</p>
+								<h5>Clone Flag</h5>
+								<p>CLONE_NEWNET</p>
+							</div>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>IPC Namespace</h2>
+						</div>
+						<div style="width:100%">
+							<div style="width:25%; float:left">
+								<img src="media/IPC_Namespace.svg" alt="IPC Namespace" />
+							</div>
+							<div style="width:75%; float:right; text-align:left">
+								<h5>Description</h5>
+								<p>IPC namespaces isolate System V IPC objects and POSIX message queues</p>
+								<h5>Kernel</h5>
+								<p>The IPC namespace was introduced for System V IPC objects in Linux kernel version 2.6.19 (29-Nov-2006), and for POSIX message queues in version 2.6.30 (09-Jun-2009)</p>
+								<h5>Clone Flag</h5>
+								<p>CLONE_NEWIPC</p>
+							</div>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>UTS Namespace</h2>
+						</div>
+						<div style="width:100%">
+							<div style="width:25%; float:left">
+								<img src="media/UTS_Namespace.svg" alt="UTS Namespace" />
+							</div>
+							<div style="width:75%; float:right; text-align:left">
+								<h5>Description</h5>
+								<p>UTS namespaces isolate system identifiers returned by the uname() system call</p>
+								<h5>Kernel</h5>
+								<p>The UTS namespace was introduced in Linux kernel version 2.6.19 (29-Nov-2006)</p>
+								<h5>Clone Flag</h5>
+								<p>CLONE_NEWUTS</p>
+							</div>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Control Groups</h2>
+						</div>
+						<div style="width:100%">
+							<div style="width:40%; float:left">
+								<img src="media/Cgroup_Hierarchy.svg" alt="Cgroup Hierarchy" />
+							</div>
+							<div style="width:60%; float:right; text-align:left">
+								<p>Cgroups are a kernel capability for <strong>allocating and controlling access</strong> to system resources</p>
+								<p>Resource control is provided by a number of cgroup <strong>sub-systems or controllers</strong></p>
+								<p>Ordered <strong>hierarchically</strong>, with processes belonging to one cgroup for each sub-system</p>
+							</div>
+						</div>
+					</section>
+
+					<section>
+						<h2>Copy-On-Write Filesystems</h2>
+						<blockquote style="width:80%" cite="http://faif.objectis.net/download-copy-on-write-based-file-systems">
+							<p style="text-align:left">COW generally follows a simple principle. As long as multiple programs need read only access to a data structure, providing them only pointers which point to the same data structure, instead of copying the whole structure to a new one, is enough.</p>
+							<footer style="text-align:right"><small>- <cite>Sakis Kasampalis</cite></small></footer>
+						</blockquote>
+						<p>Docker makes use of <strong>union mount</strong> or <strong>snapshot</strong> capabilities in order to realise COW filesystems for containers</p>
+					</section>
+				</section>
+
+				<section>
+					<img src="media/Lab_Exercise.png" alt="Lab Exercise" />
+					<h3>Lab Exercise:</h3>
+					<h3>Containers from First Principles</h3>
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+                slideNumber: 'h.v',
+				progress: false,
+				history: false,
+				center: true,
+
+				transition: 'fade', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>

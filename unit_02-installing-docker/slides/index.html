@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Docker Fundamentals</title>
+
+		<meta name="description" content="Unit 2: Installing Docker">
+		<meta name="author" content="Nigel Brown">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/custom.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+
+				<section class="cover" data-background="media/Felixstowe_Port.jpg">
+					<h2 style="color:white; text-shadow: 0 1px 0 black">Docker Fundamentals</h2>
+				</section>
+
+				<section id="title">
+					<h2>Unit 2</h2>
+					<h2>Installing Docker</h2>
+				</section>
+
+				<section id="unit_outline">
+					<section>
+						<div>
+							<h2>Objectives</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>Upon completion of this unit, you will be able to:</p>
+							<ul>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="1">Summarise the various platforms supported by Docker</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="2">Differentiate between Docker's different release channels</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="3">Detail the steps necessary for installing Docker on Linux</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="4">Outline how Docker can be provisioned on remote virtual machines, including instances provided by cloud vendors</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="5">Describe how Docker can be utilised on non-native platforms with Docker Toolbox</li>
+							</ul>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Agenda</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The following topics will be covered in this unit:</p>
+							<ul>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="1">Supported platforms</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="2">Installing Docker from the Docker Project's Repositories</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="3">Installing Docker for DEB package based Linux distributions</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="4">Installing Docker for RPM package based Linux distributions</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="5">Provisioning Docker hosts with Docker Machine</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="6">Docker Toolbox</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="7">Lab exercise: Installing Docker</li>
+							</ul>
+						</div>
+					</section>
+				</section>
+
+				<section>
+					<div>
+						<h2>Supported Platforms</h2>
+					</div>
+					<div style="80%">
+						<img src="media/Platforms.svg" alt="Platforms" />
+					</div>
+				</section>
+
+				<section id="docker_project_repos">
+					<section>
+						<div>
+							<h2>Docker Repo Channels</h2>
+						</div>
+						<div>
+							<div style="width:100%">
+								<div style="width:100%">
+									<div style="width:12%; float:left">
+										<img src="media/Main.svg" alt="Main Build" />
+									</div>
+									<div style="width:85%; float:right; text-align:left">
+										<p><strong>Main</strong>: The main project hosted channel for the most current, production ready Docker release</p>
+									</div>
+								</div>
+								<div style="width:100%; clear:both">
+									<div style="width:12%; float:left">
+										<img src="media/Test.svg" alt="Main Build" />
+									</div>
+									<div style="width:85%; float:right; text-align:left">
+										<p><strong>Test</strong>: Contains binaries for successive release candidates prior to a new production release</p>
+									</div>
+								</div>
+								<div style="width:100%; clear: both">
+									<div style="width:12%; float:left">
+										<img src="media/Experimental.svg" alt="Main Build" />
+
+									</div>
+									<div style="width:85%; float:right; text-align:left">
+										<p><strong>Experimental</strong>: Built and updated nightly, contains binaries with features which may or may not become standard</p>
+									</div>
+								</div>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>DEB Package Installation</h2>
+						</div>
+						<div style="text-align:left">
+							<p>Add Docker repository GPG public key to keyring:</p>
+							<pre><code class="no-highlight" data-trim>
+# apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 \
+--recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+							</code></pre>
+							<p>Add the repository to the package sources:</p>
+							<pre><code class="no-highlight" data-trim>
+# echo "deb https://apt.dockerproject.org/repo ${OS}-${VER} $CHAN" > \
+/etc/apt/sources.list.d/docker.list
+							</code></pre>
+							<p>Update the package index files, and install the Docker Engine:</p>
+							<pre><code class="no-highlight" data-trim>
+# apt-get update &amp;&amp; apt-get install docker-engine
+							</code></pre>
+							<small>OS=debian|ubuntu, VER=wheezy|jessie|stretch or precise|trusty|utopic|vivid|wily<br>CHAN=(main|test|experimental)</small>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>RPM Package Installation</h2>
+						</div>
+						<div style="text-align:left">
+							<p>Add the repository to the available YUM repositories, using a 'here document':</p>
+							<pre><code class="no-highlight" data-trim>
+# cat > /etc/yum.repos.d/docker.repo << EOF
+[dockerrepo]
+name=Docker Repository
+baseurl=https://yum.dockerproject.org/repo/${CHAN}/${OS}/${VER}
+enabled=1
+gpgcheck=1
+gpgkey=https://yum.dockerproject.org/gpg
+EOF
+							</code></pre>
+							<p>Install the Docker Engine:</p>
+							<pre><code class="no-highlight" data-trim>
+# yum install docker-engine
+							</code></pre>
+							<small>OS=centos|oraclelinux|fedora|opensuse VER=6|7 or 20|21|22|23 or 13.2<br>CHAN=main|test|experimental</small>
+						</div>
+					</section>
+				</section>
+
+				<section id="linux_distro_packages">
+					<section>
+						<div>
+							<h2>DEB Family Packages</h2>
+						</div>
+						<div>
+							<table>
+								<thead>
+									<tr>
+										<th>Distro</th>
+										<th>Release</th>
+										<th>Package</th>
+										<th>Suite</th>
+										<th>Version</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>Debian</td>
+										<td>Jessie</td>
+										<td>docker.io</td>
+										<td>jessie-backports</td>
+										<td>1.6.2</td>
+									</tr>
+									<tr>
+										<td></td>
+										<td>Stretch</td>
+										<td>docker.io</td>
+										<td></td>
+										<td>1.8.3</td>
+									</tr>
+									<tr>
+										<td></td>
+										<td>Sid</td>
+										<td>docker.io</td>
+										<td></td>
+										<td>1.8.3</td>
+									</tr>
+									<tr>
+										<td>Ubuntu</td>
+										<td>Trusty</td>
+										<td>docker.io</td>
+										<td>trusty-updates</td>
+										<td>1.6.2</td>
+									</tr>
+									<tr>
+										<td></td>
+										<td>Vivid</td>
+										<td>docker.io</td>
+										<td>vivid-updates</td>
+										<td>1.6.2</td>
+									</tr>
+									<tr>
+										<td></td>
+										<td>Wily</td>
+										<td>docker.io</td>
+										<td></td>
+										<td>1.6.2</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>RPM Family Packages</h2>
+						</div>
+						<div>
+							<table>
+								<thead>
+									<tr>
+										<th>Distro</th>
+										<th>Release</th>
+										<th>Package</th>
+										<th>Repo</th>
+										<th>Version</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>Fedora</td>
+										<td>22</td>
+										<td>docker</td>
+										<td>updates</td>
+										<td>1.8.2</td>
+									</tr>
+									<tr>
+										<td></td>
+										<td>23</td>
+										<td>docker</td>
+										<td>updates</td>
+										<td>1.8.2</td>
+									</tr>
+									<tr>
+										<td>CentOS</td>
+										<td>7.2.1511</td>
+										<td>docker</td>
+										<td>extras</td>
+										<td>1.8.2</td>
+									</tr>
+									<tr>
+										<td>RHEL</td>
+										<td>7.1</td>
+										<td>docker</td>
+										<td>extras</td>
+										<td>1.8.2</td>
+									</tr>
+									<tr>
+										<td>Oracle Linux</td>
+										<td>6</td>
+										<td>docker-engine</td>
+										<td>addons</td>
+										<td>1.9.1</td>
+									</tr>
+									<tr>
+										<td></td>
+										<td>7</td>
+										<td>docker-engine</td>
+										<td>addons</td>
+										<td>1.9.1</td>
+									</tr>
+									<tr>
+										<td>openSUSE</td>
+										<td>13.2</td>
+										<td>docker</td>
+										<td>update</td>
+										<td>1.9.1</td>
+									</tr>
+									<tr>
+										<td></td>
+										<td>Leap 42.1</td>
+										<td>docker</td>
+										<td>update</td>
+										<td>1.9.1</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+				</section>
+
+				<section id="docker_machine">
+					<section>
+						<div>
+							<h2>Docker Machine</h2>
+						</div>
+						<div style="width:100%">
+							<div style="width:40%; float:left">
+								<img src="media/Docker_Machine.svg" alt="Docker Machine" />
+							</div>
+							<div style=" width:60%; float:right; text-align:left">
+								<p>Docker Machine is a <strong>Docker host provisioning</strong> capability</p>
+								<p>The target may be a local VM, or an instance in the cloud</p>
+								<p><strong>Drivers</strong> are provided for numerous third-party platforms</p>
+								<p>Docker Machine is a separate binary* and project</p>
+							</div>
+							<div>
+								<small><p>* Docker Machine is currently in beta, and is provided for Linux, OS X and Windows</p></small>
+							</div>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Docker Host Creation</h2>
+						</div>
+						<div style="text-align:left">
+							<p>Create a Docker host in a VM called 'box':</p>
+							<pre><code class="no-highlight" data-trim>
+$ docker-machine create -d virtualbox box
+Creating VirtualBox VM...
+Creating SSH key...
+Starting VirtualBox VM...
+Starting VM...
+To see how to connect Docker to this machine, run: docker-machine env box
+$ docker-machine env box
+export DOCKER_TLS_VERIFY="1"
+export DOCKER_HOST="tcp://192.168.99.100:2376"
+export DOCKER_CERT_PATH="/home/wolf/.docker/machine/machines/box"
+export DOCKER_MACHINE_NAME="box"
+# Run this command to configure your shell:
+# eval "$(docker-machine env box)"
+							</code></pre>
+							<p>List known Docker hosts:</p>
+							<pre><code class="no-highlight" data-trim>
+$ docker-machine ls
+NAME   ACTIVE   DRIVER       STATE     URL                         SWARM
+box    *        virtualbox   Running   tcp://192.168.99.100:2376
+							</code></pre>
+						</div>
+					</section>
+				</section>
+
+				<section>
+					<div>
+						<h2>Docker Toolbox</h2>
+					</div>
+					<div style="text-align:left">
+						<p>Docker Toolbox assembles several Docker tools into a single package for installation</p>
+					</div>
+					<div style="width:100%">
+						<div style="width:35%; float:left">
+							<img src="media/Docker_Toolbox.svg" alt="Docker Toolbox" />
+						</div>
+						<div style="width:65%; float:right">
+							<table>
+								<thead>
+									<tr>
+										<th>Component</th>
+										<th>Windows*</th>
+										<th>Mac OS X</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>Docker Client</td>
+										<td style="text-align:center"><img src="media/Tick.svg" alt="Tick" style="vertical-align:bottom" /></td>
+										<td style="text-align:center"><img src="media/Tick.svg" alt="Tick" style="vertical-align:bottom" /></td>
+									</tr>
+									<tr>
+										<td>Docker Machine</td>
+										<td style="text-align:center"><img src="media/Tick.svg" alt="Tick" style="vertical-align:bottom" /></td>
+										<td style="text-align:center"><img src="media/Tick.svg" alt="Tick" style="vertical-align:bottom" /></td>
+									</tr>
+									<tr>
+										<td>Docker Compose</td>
+										<td style="text-align:center"><img src="media/Tick.svg" alt="Tick" style="vertical-align:bottom" /></td>
+										<td style="text-align:center"><img src="media/Tick.svg" alt="Tick" style="vertical-align:bottom" /></td>
+									</tr>
+									<tr>
+										<td>Kitematic</td>
+										<td style="text-align:center"><img src="media/Tick.svg" alt="Tick" style="vertical-align:bottom" /></td>
+										<td style="text-align:center"><img src="media/Tick.svg" alt="Tick" style="vertical-align:bottom" /></td>
+									</tr>
+									<tr>
+										<td>Boot2Docker ISO</td>
+										<td style="text-align:center"><img src="media/Tick.svg" alt="Tick" style="vertical-align:bottom" /></td>
+										<td style="text-align:center"><img src="media/Tick.svg" alt="Tick" style="vertical-align:bottom" /></td>
+									</tr>
+									<tr>
+										<td>Virtualbox</td>
+										<td style="text-align:center"><img src="media/Tick.svg" alt="Tick" style="vertical-align:bottom" /></td>
+										<td style="text-align:center"><img src="media/Tick.svg" alt="Tick" style="vertical-align:bottom" /></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+					<small>* Docker Toolbox for Windows installs Git for windows, which provides bash and OpenSSH amongst other things</small>
+				</section>
+
+				<section>
+					<img src="media/Lab_Exercise.svg" alt="Lab Exercise" />
+					<h3>Lab Exercise:</h3>
+					<h3>Installing Docker</h3>
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+                slideNumber: 'h.v',
+				progress: false,
+				history: false,
+				center: true,
+
+				transition: 'fade', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
