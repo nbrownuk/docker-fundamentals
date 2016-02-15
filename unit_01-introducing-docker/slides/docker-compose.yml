@@ -1,7 +1,7 @@
 version: '2'
 
 services:
-  intro:
+  revealjs:
     image: nbrown/revealjs:latest
 
     container_name: introducing_docker

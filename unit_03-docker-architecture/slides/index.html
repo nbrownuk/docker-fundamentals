@@ -1,0 +1,646 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Docker Fundamentals</title>
+
+		<meta name="description" content="Unit 3: Docker Architecture">
+		<meta name="author" content="Nigel Brown">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/custom.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+
+				<section class="cover" data-background="media/Felixstowe_Port.jpg">
+					<h2 style="color:white; text-shadow: 0 1px 0 black">Docker Fundamentals</h2>
+				</section>
+
+				<section id="title">
+					<h2>Unit 3</h2>
+					<h2>Docker Architecture</h2>
+				</section>
+
+				<section id="unit_outline">
+					<section id="objectives">
+						<div>
+							<h2>Objectives</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>Upon completion of this unit, you will be able to:</p>
+							<ul>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="1">Outline the components of Docker's architecture</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="2">Differentiate between Docker images and container filesystems</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="3">Describe how to address Docker images from different locations</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="4">Explain the purpose of the execution and storage drivers</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="5">Summarise the purpose of the Docker client and daemon</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="6">Detail how the client and daemon communicate</li>
+							</ul>
+						</div>
+					</section>
+
+					<section id="agenda">
+						<div>
+							<h2>Agenda</h2>
+						</div>
+						<div style="text-align:left">
+							<p>The following topics will be covered in this unit:</p>
+							<ul>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="1">Architecture Overview</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="2">Docker Images</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="3">Execution Driver</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="4">Storage Driver</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="5">Docker Client</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="6">Docker Daemon</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="7">Lab Exercise: Configuring the Docker Daemon</li>
+							</ul>
+						</div>
+					</section>
+				</section>
+
+				<section>
+					<div>
+						<h2>Docker Architecture</h2>
+					</div>
+					<div>
+						<img src="media/Docker_Architecture.svg" alt="Docker Architecture" />
+					</div>
+				</section>
+
+				<section id="docker_images">
+					<section>
+						<div>
+							<h2>Docker Images</h2>
+						</div>
+						<div>
+							<img src="media/Image_Layers.svg" alt="Image Layers" />
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Container Filesystem</h2>
+						</div>
+						<div>
+							<img src="media/Container_Filesystem.svg" alt="Container Filesystem" />
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Layers &amp; Copy-on-Write</h2>
+						</div>
+						<div>
+							<img src="media/Shared_Layers.svg" alt="Shared Image Layers" />
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Docker Registries</h2>
+						</div>
+						<div>
+							<img src="media/Docker_Hub_Web_UI.png" alt="Docker Hub" />
+							<br>A Docker registry stores Docker images in repositories
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Anatomy of Image Names</h2>
+						</div>
+						<div>
+							<p style="text-align:left">Syntax</p>
+							<pre><code class="no-highlight">[hostname[:port]]/[username]/reponame[:tag]</code></pre>
+							<p style="text-align:left">Docker Hub official image example</p>
+							<pre><code class="no-highlight">centos:latest</code></pre>
+							<p style="text-align:left">Docker Hub user namespace example</p>
+							<pre><code class="no-highlight">phusion/baseimage:0.9.9</code></pre>
+							<p style="text-align:left">Third party registry, user namespace example</p>
+							<pre><code class="no-highlight">quay.io/signalfuse/zookeeper:3.4.6-1</code></pre>
+							<p style="text-align:left">Self-hosted registry example</p>
+							<pre><code class="no-highlight">localhost:5000/revealjs:latest</code></pre>
+						</div>
+					</section>
+				</section>
+
+				<section>
+					<div>
+						<h2>Execution Driver</h2>
+					</div>
+					<div style="width:100%">
+						<div style="width:40%; float:left">
+							<img src="media/runC.svg" alt="runC" />
+						</div>
+						<div style="width:60%; float:right; text-align:left">
+							<p>The execution driver creates, starts, stops and destroys containers</p>
+						</div>
+					</div>
+					<div style="clear:both">
+						<p>Docker uses a native, purpose built execution driver called <strong>libcontainer</strong>, a Golang library</p>
+						<p><strong>Open Container Initiative</strong> established to define vendor agnostic standard for container runtime environments</p>
+						<p>Docker contributed libcontainer as basis of a new reference implementation of the OCI specs, called <strong>runC</strong></p>
+					</div>
+				</section>
+
+				<section id="storage_driver">
+					<section>
+						<div>
+							<h2>Storage Driver</h2>
+						</div>
+						<div>
+							<p>The storage driver manages the Docker host's cache of <strong>image layers</strong> and their contents</p>
+							<p>Several different storage drivers are supported</p>
+							<p>Choice comes down to: <strong>user vs. daemon</strong>, <strong>kernel support</strong>, <strong>backing filesystem</strong>, <strong>workload type vs. performance</strong></p>
+							<p>Supported storage drivers:<br><strong>aufs</strong>, <strong>btrfs</strong>, <strong>devicemapper</strong>, <strong>zfs</strong> &amp; <strong>overlay</strong></p>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Storage Driver</h2>
+						</div>
+						<div>
+							<img src="media/Graphdriver_Priority.svg" alt="Storage Driver Priority" />
+						</div>
+					</section>
+				</section>
+
+				<section id="docker_client">
+					<section>
+						<div>
+							<h2>Docker Client</h2>
+						</div>
+						<div>
+							<img src="media/Client_Commands_1.svg" alt="Client Commands" />
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Docker Client</h2>
+						</div>
+						<div>
+							<img src="media/Client_Commands_2.svg" alt="Client Commands" />
+						</div>
+					</section>
+				</section>
+
+				<section id="docker-daemon">
+					<section>
+						<div>
+							<h2>Stop/Start Docker Daemon</h2>
+						</div>
+						<div>
+							<p style="text-align:left"><strong>Docker Machine:</strong></p>
+							<pre><code class="no-highlight" data-trim># docker-machine ls
+NAME   ACTIVE   DRIVER       STATE     URL                        SWARM
+box    *        virtualbox   Running   tcp://192.168.99.100:2376
+# docker-machine stop box
+# docker-machine ls
+NAME   ACTIVE   DRIVER       STATE     URL   SWARM
+box             virtualbox   Stopped
+# docker-machine start
+Starting VM...
+Started machines may have new IP addresses. You may need to re-run the
+`docker-machine env` command.
+							</code></pre>
+							<p style="text-align:left"><strong>Upstart Init System:</strong></p>
+							<pre><code class="no-highlight" data-trim># service docker stop
+docker stop/waiting
+# service docker start
+docker start/running, process 7685
+							</code></pre>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Stop/Start Docker Daemon</h2>
+						</div>
+						<div>
+							<p style="text-align:left"><strong>Systemd Init System:</strong></p>
+							<pre><code class="no-highlight" data-trim># systemctl is-enabled docker.service
+disabled
+# systemctl enable docker.service
+Created symlink From /etc/systemd/system/multi-user.target.wants/docker.service
+to /usr/lib/systemd/system/docker.service
+# systemctl start docker.service
+# systemctl stop docker.service
+							</code></pre>
+						</div>
+						<div>
+							<p style="text-align:left">Unit file changes require reload &amp; restart</p>
+							<pre><code class="no-highlight" data-trim># systemctl daemon-reload
+# systemctl restart docker.service
+							</code></pre>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Applying Config Options</h2>
+						</div>
+						<div style="text-align:left">
+							<p><strong>Upstart Init System:</strong></p>
+							<ul>
+								<li>Environment variables and config options are defined in <code>/etc/default/docker</code></li>
+								<li>Use <code>DOCKER_OPTS</code> variable to define config options; e.g <code>DOCKER_OPTS=”--storage-driver=overlay”</code></li>
+							</ul
+						</div>
+						<div style="text-align:left">
+							<p><strong>Systemd Init System:</strong></p>
+							<ul>
+								<li>Default unit file can be overridden with config files in <code>/etc/systemd/system/docker.service.d</code></li>
+							</ul>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>General Config Options</h2>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Daemon Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>--default-ulimit=[]</code></td>
+										<td>Default ulimit parameters for containers</td>
+									</tr>
+									<tr>
+										<td><code>-e, --exec-driver="native"</code></td>
+										<td>Execution driver the Docker Engine uses</td>
+									<tr>
+										<td><code>--exec-opt=[]</code></td>
+										<td>Options for the execution driver</td>
+									</tr>
+									<tr>
+										<td><code>--exec-root="/var/run/docker"</code></td>
+										<td>Root for execution driver</td>
+									</tr>
+									<!--<tr>
+										<td><code>-G, --group="docker"</code></td>
+										<td>Group used for UNIX socket</td>-->
+									</tr>
+									<tr>
+										<td><code>-g, --graph="/var/lib/docker"</code></td>
+										<td>Location of Docker runtime environment</td>
+									</tr>
+									<!--<tr>
+										<td><code>-H, --host=[]</code></td>
+										<td>Set of UNIX sockets the daemon listens on</td>
+									</tr>-->
+									<tr>
+										<td><code>-p, --pidfile="/var/run/docker.pid"</code></td>
+										<td>File containing the PID of the daemon</td>
+									</tr>
+									<tr>
+										<td><code>-s, --storage-driver=""</code></td>
+										<td>Storage driver used by Docker Engine</td>
+									</tr>
+									<tr>
+										<td><code>--selinux-enabled=false</code></td>
+										<td>Apply SELinux security to Docker daemon</td>
+									</tr>
+									<tr>
+										<td><code>--storage-opt=[]</code></td>
+										<td>Options for the storage driver</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+				</section>
+
+				<section id="troubleshootintg_data">
+					<section>
+						<div>
+							<h2>docker version</h2>
+						</div>
+						<div style="text-align:left">
+							<p>Provides basic information for both the daemon and the client:</p>
+							<pre><code class="no-highlight" data-trim>$ docker version
+Client:
+ Version:      1.9.1
+ API version:  1.21
+ Go version:   go1.4.2
+ Git commit:   a34a1d5
+ Built:        Fri Nov 20 13:12:04 UTC 2015
+ OS/Arch:      linux/amd64
+
+Server:
+ Version:      1.9.1
+ API version:  1.21
+ Go version:   go1.4.2
+ Git commit:   a34a1d5
+ Built:        Fri Nov 20 13:12:04 UTC 2015
+ OS/Arch:      linux/amd64
+							</code></pre>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Client Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>-f, --format[=FORMAT]</code></td>
+										<td>Golang text/template to apply to the output</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>docker info</h2>
+						</div>
+						<div style="text-align:left">
+							<p>Provides detailed information for the configuration of the Docker host:</p>
+							<pre><code class="no-highlight" data-trim>$ docker info
+Containers: 2
+Images: 82
+Server Version: 1.9.1
+Storage Driver: overlay
+ Backing Filesystem: extfs
+Execution Driver: native-0.2
+Logging Driver: json-file
+Kernel Version: 3.19.0-26-generic
+Operating System: Ubuntu 14.04.3 LTS
+CPUs: 2
+Total Memory: 3.751 GiB
+Name: castafiore
+ID: GGZ5:AH7A:YGT3:CCUL:LUWZ:MMNN:32EN:I22P:G2DU:PKYK:TT5Y:UBMA
+WARNING: No swap limit support
+							</code></pre>
+							<p>Additional data is provided when the daemon is run with log level set to DEBUG</p>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Docker Daemon Logging</h2>
+						</div>
+						<div style="text-align:left">
+							<p>Docker daemon's logging can be set to one of debug, <strong>info</strong>, warn, error or fatal</p>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Host Type</th>
+										<th>Log Location</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>Upstart</td>
+										<td>Logs located at <code>/var/log/upstart/docker.log</code> and are ascii</td>
+									</tr>
+									<tr>
+										<td>Systemd</td>
+										<td>Logs are binary, can be viewed with systemd <code>journalctl</code> utility</td>
+									</tr>
+									<tr>
+										<td>boot2docker</td>
+										<td>Use <code>docker-machine ssh &lt;host&gt; 'tail -f /var/log/docker.log'</code></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<div style="text-align:left">
+							<p>The logging config options for the daemon are:</p>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Daemon Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>-D=false</code></td>
+										<td>Sets logging level of Docker daemon to <code>debug</code></td>
+									</tr>
+									<tr>
+										<td><code>-l, --log-level="info"</code></td>
+										<td>Sets logging level of Docker dameon</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+				</section>
+
+				<section id="client_server_comms">
+					<section>
+						<div>
+							<h2>Local Daemon Comms</h2>
+						</div>
+						<div>
+							<ul>
+								<li>By default, Docker daemon listens on a local UNIX socket at <code>/var/run/docker.sock</code></li>
+								<li>The <code>-H</code> config option can be used to customise the default socket configuration</li>
+								<li>Systemd socket activation requires option <code>-H fd://</code></li>
+							</ul>
+						</div>
+						<div>
+							<p>The local client/server config options for the daemon are:</p>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Daemon Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>-G, --group="docker"</code></td>
+										<td>Sets group ownership of daemon socket</td>
+									</tr>
+									<tr>
+										<td><code>-H, --host=[]</code></td>
+										<td>List of sockets the daemon listens on</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Remote Daemon Comms</h2>
+						</div>
+						<div>
+							<p>Remote client server communication is achieved via a TCP socket, but needs securing with TLS</p>
+						</div>
+						<div>
+							<img src="media/TLS_Encryption.svg" alt="TLS Encryption" />
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Securing Remote Comms</h2>
+						</div>
+						<div>
+							<ul>
+								<li>Docker provides several config options to enable TLS</li>
+								<li>The options apply to both the client and the daemon</li>
+							</ul>
+						</div>
+						<div>
+							<p>The TLS config options for the client and daemon are:</p>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Daemon Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>--tls</code></td>
+										<td>Use TLS - implied by <code>--tlsverify</code</td>
+									</tr>
+									<tr>
+										<td><code>--tlscacert="~/.docker/ca.pem"</code></td>
+										<td>Only trust certificates signed by this CA</td>
+									</tr>
+									<tr>
+										<td><code>--tlscert="~/.docker/cert.pem"</code></td>
+										<td>Path to certificate containing public key</td>
+									</tr>
+									<tr>
+										<td><code>--tlskey="~/.docker/key.pem"</code></td>
+										<td>Path to private key</td>
+									</tr>
+									<tr>
+										<td><code>--tlsverify=false</code></td>
+										<td>Use TLS to verify the client or daemon</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Securing Remote Comms</h2>
+						</div>
+						<div>
+							<ul>
+								<li>Client commands can be simplified with use of environment variables</li>
+								<li>Client's certificates and key can be placed in user's directory <code>~/.docker</code></li>
+							</ul>
+						</div>
+						<div>
+							<p style="text-align:left">The environment variables used to simplify client command execution are:</p>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Environment Variable</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>DOCKER_CERT_PATH</code></td>
+										<td>Alternate location to <code>.docker</code> for certificates</td>
+									</tr>
+									<tr>
+										<td><code>DOCKER_HOST</code></td>
+										<td>Socket to connect to, e.g. <code>tcp://miarka:2376</code></td>
+									</tr>
+									<tr>
+										<td><code>DOCKER_TLS_VERIFY</code></td>
+										<td>When set to '1', client authenticates daemon against CA</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+				</section>
+
+				<section>
+					<img src="media/Lab_Exercise.svg" alt="Lab Exercise" />
+					<h3>Lab Exercise:</h3>
+					<h3>Configuring the Docker Daemon</h3>
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				slideNumber: 'h.v',
+				progress: false,
+				history: false,
+				center: true,
+
+				transition: 'fade', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>

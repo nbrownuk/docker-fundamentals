@@ -1,0 +1,719 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Docker Fundamentals</title>
+
+		<meta name="description" content="Unit 4: The Container Lifecycle">
+		<meta name="author" content="Nigel Brown">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/custom.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+
+				<section class="cover" data-background="media/Felixstowe_Port.jpg">
+					<h2 style="color:white; text-shadow: 0 1px 0 black">Docker Fundamentals</h2>
+				</section>
+
+				<section id="title">
+					<h2>Unit 4</h2>
+					<h2>The Container Lifecycle</h2>
+				</section>
+
+				<section id="unit_outline">
+					<section id="objectives">
+						<div>
+							<h2>Objectives</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>Upon completion of this unit, you will be able to:</p>
+							<ul>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="1">Describe the Docker CLI commands available for managing the lifecycle of a container</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="2">Detail the various configuration options available for fine tuning the operation of containers</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="3">Explain how it is possible to attach to, or execute ad hoc commands in, containers that are already running</li>
+							</ul>
+						</div>
+					</section>
+
+					<section id="agenda">
+						<div>
+							<h2>Agenda</h2>
+						</div>
+						<div style="text-align:left">
+							<p>The following topics will be covered in this unit:</p>
+							<ul>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="1">Container States</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="2">docker create and docker run</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="3">docker start</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="4">docker stop and docker restart</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="5">docker attach</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="6">docker pause and docker unpause</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="7">docker kill</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="8">docker rm</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="9">docker exec</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="10">Lab Exercise: Managing the Container Lifecycle</li>
+							</ul>
+						</div>
+					</section>
+				</section>
+
+				<section>
+					<div>
+						<h2>Container States</h2>
+					</div>
+					<div>
+						<img src="media/Container_States.svg" alt="Container States" />
+					</div>
+				</section>
+
+				<section id="create_run_options">
+					<section>
+						<div>
+							<h2>docker create/run</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The format of the docker create command is:</p>
+							<pre><code class="no-highlight">docker create [options] image [command] [args ...]</code></pre>
+							<p>The format of the docker run command is:</p>
+							<pre><code class="no-highlight">docker run [options] image [command] [args ...]</code></pre>
+							<p>Both commands share majority of config options</p>
+							<p>The following config options are exclusive to docker run:</p>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Client Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>-d, --detached=false</code></td>
+										<td>Run the container in the background</td>
+									</tr>
+									<tr>
+										<td><code>--rm=false</code></td>
+										<td>Remove container immediately after the container process exits</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Runtime Config Options</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The following config options influence container runtime:</p>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Client Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>--addhost=[]</code></td>
+										<td>Adds a hostname/IP address entry to container’s /etc/hosts</td>
+									</tr>
+									<tr>
+										<td><code>--device=[]</code></td>
+										<td>Adds a device from the host into the container</td>
+									</tr>
+									<tr>
+										<td><code>--entrypoint=""</code></td>
+										<td>Overrides the default binary or command to run in the container</td>
+									</tr>
+									<tr>
+										<td><code>-e, --env=[]</code></td>
+										<td>Adds environment variable into container runtime environment</td>
+									</tr>
+									<tr>
+										<td><code>--env-file=[]</code></td>
+										<td>File with multiple environment variables for container's runtime</td>
+									</tr>
+									<tr>
+										<td><code>--group-add=[]</code></td>
+										<td>Adds additional group for user that owns the container's process</td>
+									</tr>
+									<tr>
+										<td><code>-h, --hostname=""</code></td>
+										<td>Specifies a specific hostname for the container</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Runtime Config Options</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The following config options influence container runtime:</p>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Client Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>--log-driver=""</code></td>
+										<td>Specifies container's log driver (default: json-file)</td>
+									</tr>
+									<tr>
+										<td><code>--log-opt=[]</code></td>
+										<td>Provides logging driver specific options</td>
+									</tr>
+									<tr>
+										<td><code>--mac-address=""</code></td>
+										<td>Allows setting a specific MAC address</td>
+									</tr>
+									<tr>
+										<td><code>--oom-kill-disable=false</code></td>
+										<td>Disables the OOM killer for the container's process</td>
+									</tr>
+									<tr>
+										<td><code>--sig-proxy=true</code></td>
+										<td>Signals are proxied to container's process when no TTY</td>
+									</tr>
+									<tr>
+										<td><code>--stop-signal=”SIGTERM”</code></td>
+										<td>Changes the signal sent to container's process to stop it</td>
+									</tr>
+									<tr>
+										<td><code>-u, --user=""</code></td>
+										<td>Specifies the user for the container's process</td>
+									</tr>
+									<tr>
+										<td><code>-w, --workdir=""</code></td>
+										<td>Specifies the working directory for the container's process</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Constraint Config Options</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The following config options constrain the container:</p>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Client Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>--blkio-weight=0</code></td>
+										<td>Specifies relative weight for block I/) activity</td>
+									</tr>
+									<tr>
+										<td><code>--cgroup-parent=""</code></td>
+										<td>Path to cgroup parent outside Docker for container</td>
+									</tr>
+									<tr>
+										<td><code>-c, --cpu-shares=0</code></td>
+										<td>Relative weight for container's access to CPU shares</td>
+									</tr>
+									<tr>
+										<td><code>--cpu-period=0</code></td>
+										<td>Time period over which to apply quota for container</td>
+									</tr>
+									<tr>
+										<td><code>--cpuset-cpus=""</code></td>
+										<td>Specifies which CPUs the container's process can run on</td>
+									</tr>
+									<tr>
+										<td><code>--cpuset-mems=""</code></td>
+										<td>Specifies which mem. nodes container's process can run on</td>
+									</tr>
+									<tr>
+										<td><code>--cpu-quota=0</code></td>
+										<td>Specifies quota to apply for access to CPU over time period</td>
+									</tr>
+									<tr>
+										<td><code>--kernel-memory=""</code></td>
+										<td>Assigns limit to kernel memory used by container</td>
+									</tr>
+									<tr>
+										<td><code>-m, --memory=""</code></td>
+										<td>Assigns a limit to the physical memory used by container</td>
+									</tr>
+									<tr>
+										<td><code>--memory-reservation=""</code></td>
+										<td>A soft limit for memory used by the container</td>
+									</tr>
+									<tr>
+										<td><code>--memory-swap=""</code></td>
+										<td>A limit to the swap used by the container</td>
+									</tr>
+									<tr>
+										<td><code>--memory-swappiness=""</code></td>
+										<td>Sets how aggressively the kernel swaps pages</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Namespace Config Options</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The following config options alter default namespaces for the container:</p>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Client Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>--ipc=""</code></td>
+										<td>Container belongs to IPC namespace of host or other container</td>
+									</tr>
+									<tr>
+										<td><code>--pid=""</code></td>
+										<td>Container belongs to PID namespace of host</td>
+									</tr>
+									<tr>
+										<td><code>--uts=""</code></td>
+										<td>Container belongs to UTS namespace of host</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Security Config Options</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The following config options enhance security for the container:</p>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Client Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>--cap-add=[]</code></td>
+										<td>Add Linux capabilities for the container's process owner</td>
+									</tr>
+									<tr>
+										<td><code>--cap-drop=[]</code></td>
+										<td>Drop Linux capabilities for the container's process owner</td>
+									</tr>
+									<tr>
+										<td><code>--privileged=false</code></td>
+										<td>Provide enhanced privileges for the container</td>
+									</tr>
+									<tr>
+										<td><code>--read-only=false</code></td>
+										<td>Make the container's filesystem read only</td>
+									</tr>
+									<tr>
+										<td><code>--security-opt=[]</code></td>
+										<td>Apply SELinux or AppArmor security to container</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>I/O Config Options</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The following config options enable client I/O with the container:</p>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Client Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>-a, --attach=[]</code></td>
+										<td>Attach to a container's stdin, and/or stdout and/or stderr</td>
+									</tr>
+									<tr>
+										<td><code>-i, --interactive=false</code></td>
+										<td>Make interactive connection by attaching to stdin</td>
+									</tr>
+									<tr>
+										<td><code>-t, --tty=false</code></td>
+										<td>Assign a pseudo-TTY terminal to the container</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Other Config Options</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The following miscellaneous config options can be applied to the container:</p>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Client Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>--cidfile=""</code></td>
+										<td>Write the container's ID to the specified file</td>
+									</tr>
+									<tr>
+										<td><code>--disable-content-trust=true</code></td>
+										<td>Image tag content trust for Docker Hub is disabled</td>
+									</tr>
+									<tr>
+										<td><code>-l, --label=[]</code></td>
+										<td>Define metadata label for container as key/value pair</td>
+									</tr>
+									<tr>
+										<td><code>--label-file=[]</code></td>
+										<td>Provide a file containing labels for a container</td>
+									</tr>
+									<tr>
+										<td><code>--lxc-conf=[]</code></td>
+										<td>Add LXC specific options when using LXC exec driver</td>
+									</tr>
+									<tr>
+										<td><code>--name=""</code></td>
+										<td>Override daemon provided container name</td>
+									</tr>
+									<tr>
+										<td><code>--restart=""</code></td>
+										<td>Defines the restart policy to apply to container</td>
+									</tr>
+									<tr>
+										<td><code>--ulimit=[]</code></td>
+										<td>Specifies ulimits to apply to the container</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+				</section>
+
+				<section>
+					<div>
+						<h2>docker start</h2>
+					</div>
+					<div  style="text-align:left">
+						<p>The format of the docker start command is:</p>
+						<pre><code class="no-highlight">docker start [options] container [container ...]</code></pre>
+						<p>The following config options are available for docker start:</p>
+					</div>
+					<div>
+						<table class="opts">
+							<thead>
+								<tr>
+									<th>Client Option</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><code>-a, --attach=false</code></td>
+									<td>Attach to container's stdout and stderr, and forward signals</td>
+								</tr>
+								<tr>
+									<td><code>-i, --interactive=false</code></td>
+									<td>Make container interactive by connecting to stdin</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</section>
+
+				<section>
+					<div>
+						<h2>docker stop/restart</h2>
+					</div>
+					<div  style="text-align:left">
+						<p>The format of the docker stop command is:</p>
+						<pre><code class="no-highlight">docker stop [option] container [container ...]</code></pre>
+						<p>Default signal is SIGTERM, which can be overridden using --stop-signal config option on creation<p>
+						<p>The format of the docker restart command is:</p>
+						<pre><code class="no-highlight">docker restart [option] container [container ...]</code></pre>
+						<p>The following config option is available for both commands:</p>
+					</div>
+					<div>
+						<table class="opts">
+							<thead>
+								<tr>
+									<th>Client Option</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><code>-t, --time=10</code></td>
+									<td>Grace period before sending SIGKILL to stop container's process</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</section>
+
+				<section>
+					<div>
+						<h2>docker attach</h2>
+					</div>
+					<div  style="text-align:left">
+						<p>The format of the docker attach command is:</p>
+						<pre><code class="no-highlight">docker attach [options] container</code></pre>
+						<p>To disconnect from a container, use the CTL-P CTL-Q sequence or CTL-C if --sig-proxy=false<p>
+						<p>The following config options are available for docker attach:</p>
+					</div>
+					<div>
+						<table class="opts">
+							<thead>
+								<tr>
+									<th>Client Option</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><code>--no-stdin=false</code></td>
+									<td>Do not attach to container's stdin</td>
+								</tr>
+								<tr>
+									<td><code>--sig-proxy=true</code></td>
+									<td>In non-TTY mode, proxy all received signals to the container</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</section>
+
+				<section>
+					<div>
+						<h2>docker pause/unpause</h2>
+					</div>
+					<div>
+						<img src="media/Docker_Pause_Unpause.svg" alt="docker pause" />
+					</div>
+					<div  style="text-align:left">
+						<p>The format of the docker pause/unpause commands are:</p>
+						<pre><code class="no-highlight">docker pause container</code></pre>
+						<pre><code class="no-highlight">docker unpause container</code></pre>
+					</div>
+				</section>
+
+				<section>
+					<div>
+						<h2>docker kill</h2>
+					</div>
+					<div  style="text-align:left">
+						<p>The format of the docker kill command is:</p>
+						<pre><code class="no-highlight">docker kill [option] container [container ...]</code></pre>
+						<p>The following config option is available for docker kill:</p>
+					</div>
+					<div>
+						<table class="opts">
+							<thead>
+								<tr>
+									<th>Client Option</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><code>-s, --signal=""</code></td>
+									<td>Send specified signal to container (default: SIGKILL)</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</section>
+
+				<section>
+					<div>
+						<h2>docker rm</h2>
+					</div>
+					<div  style="text-align:left">
+						<p>The format of the docker rm command is:</p>
+						<pre><code class="no-highlight">docker rm [options] container [container ...]</code></pre>
+						<p>Destroys the container, and unregisters from the daemon<p>
+						<p>The following config options are available for docker rm:</p>
+					</div>
+					<div>
+						<table class="opts">
+							<thead>
+								<tr>
+									<th>Client Option</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><code>-f, --force=false</code></td>
+									<td>Forcefully remove a container even though it is running</td>
+								</tr>
+								<tr>
+									<td><code>-l, --link=false</code></td>
+									<td>Remove the link that exists between two containers</td>
+								</tr>
+								<tr>
+									<td><code>-v, --volumes=false</code></td>
+									<td>Remove any volumes uniquely referenced by container</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</section>
+
+				<section>
+					<div>
+						<h2>docker exec</h2>
+					</div>
+					<div  style="text-align:left">
+						<p>The format of the docker exec command is:</p>
+						<pre><code class="no-highlight">docker exec [options] container command [arg ...]</code></pre>
+						<p>The following config options are available for docker exec:</p>
+					</div>
+					<div>
+						<table class="opts">
+							<thead>
+								<tr>
+									<th>Client Option</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><code>-d, --detach=false</code></td>
+									<td>Execute command in detached mode</td>
+								</tr>
+								<tr>
+									<td><code>-i, --interactive=false</code></td>
+									<td>Make the new process in the container interactive</td>
+								</tr>
+								<tr>
+									<td><code>--privileged=false</code></td>
+									<td>Raise the capabilities provided for the new command</td>
+								</tr>
+								<tr>
+									<td><code>-t, --tty=false</code></td>
+									<td>Assign a pseudo-TTY to the new process</td>
+								</tr>
+								<tr>
+									<td><code>-u, --user=""</code></td>
+									<td>Execute command as user with optional group membership</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</section>
+
+				<section>
+					<img src="media/Lab_Exercise.svg" alt="Lab Exercise" />
+					<h3>Lab Exercise:</h3>
+					<h3>Managing the Container Lifecycle</h3>
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				slideNumber: 'h.v',
+				progress: false,
+				history: false,
+				center: true,
+
+				transition: 'fade', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>

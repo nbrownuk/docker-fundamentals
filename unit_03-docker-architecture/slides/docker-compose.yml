@@ -4,7 +4,7 @@ services:
   revealjs:
     image: nbrown/revealjs:latest
 
-    container_name: installing_docker
+    container_name: docker_architecture
 
     stdin_open: true
     tty: true

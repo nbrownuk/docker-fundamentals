@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Docker Fundamentals</title>
+
+		<meta name="description" content="Unit 5: Container Utilities">
+		<meta name="author" content="Nigel Brown">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/custom.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+
+				<section class="cover" data-background="media/Felixstowe_Port.jpg">
+					<h2 style="color:white; text-shadow: 0 1px 0 black">Docker Fundamentals</h2>
+				</section>
+
+				<section id="title">
+					<h2>Unit 5</h2>
+					<h2>Container Utilities</h2>
+				</section>
+
+				<section id="unit_outline">
+					<section id="objectives">
+						<div>
+							<h2>Objectives</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>Upon completion of this unit, you will be able to:</p>
+							<ul>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="1">Describe the Docker CLI commands available for retrieving data related to the operation of containers and their corresponding images</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="2">Explain how to view container process' output that has been sent to stdin and stderr from the container</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="3">Run appropriate commands to view characteristics of a container's runtime environment</li>
+							</ul>
+						</div>
+					</section>
+
+					<section id="agenda">
+						<div>
+							<h2>Agenda</h2>
+						</div>
+						<div style="text-align:left">
+							<p>The following topics will be covered in this unit:</p>
+							<ul>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="1">docker events (container and image events)</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="2">docker inspect (applying the Golang text/template)</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="3">docker logs</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="4">docker stats</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="5">docker wait</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="6">docker ps (filtering and formatting output)</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="7">docker diff</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="8">docker top</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="9">docker port</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="10">docker cp</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="11">Lab Exercise: Working With Container Utilities</li>
+							</ul>
+						</div>
+					</section>
+				</section>
+
+				<section id="docker_events">
+					<section>
+						<div>
+							<h2>docker events</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The format of the docker events command is:</p>
+							<pre><code class="no-highlight">docker events [options]</code></pre>
+							<p>The following config options are available for docker events:</p>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Client Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>--since=""</code></td>
+										<td>Display events since specified time</td>
+									</tr>
+									<tr>
+										<td><code>--until=""</code></td>
+										<td>Display events until specified time in future</td>
+									</tr>
+									<tr>
+										<td><code>-f, --filter=[]</code></td>
+										<td>Apply a filter to the events retrieved</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<div>
+							<br>
+							<ul>
+								<li>Multiple filters of same types produce logical OR</li>
+								<li>Multiple filters of different types produce logical AND</li>
+							</ul>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Container Events</h2>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Container Event</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>archive-path</code></td>
+										<td>Files copied (as a tar archive) from a container to the host</td>
+									</tr>
+									<tr>
+										<td><code>attach</code></td>
+										<td>A client attaches to a running container</td>
+									</tr>
+									<tr>
+										<td><code>commit</code></td>
+										<td>An image is created from a container's filesystem</td>
+									</tr>
+									<tr>
+										<td><code>create</code></td>
+										<td>A container is created by the server</td>
+									</tr>
+									<tr>
+										<td><code>destroy</code></td>
+										<td>A container is removed by the server</td>
+									</tr>
+									<tr>
+										<td><code>die</code></td>
+										<td>A container stops (with or without error)</td>
+									</tr>
+									<tr>
+										<td><code>exec_create</code></td>
+										<td>An exec command is created for a running container</td>
+									</tr>
+									<tr>
+										<td><code>exec_start</code></td>
+										<td>An exec command is started in a running container</td>
+									</tr>
+									<tr>
+										<td><code>export</code></td>
+										<td>A container's filesystem is exported</td>
+									</tr>
+									<tr>
+										<td><code>extract-to-dir</code></td>
+										<td>Files are copied (as a tar archive) from the host to a container</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Container Events</h2>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Container Event</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>kill</code></td>
+										<td>The server kills a running container</td>
+									</tr>
+									<tr>
+										<td><code>oom</code></td>
+										<td>A container exits due to being out of memory</td>
+									</tr>
+									<tr>
+										<td><code>pause</code></td>
+										<td>The server pauses a running container</td>
+									</tr>
+									<tr>
+										<td><code>rename</code></td>
+										<td>A container is renamed</td>
+									</tr>
+									<tr>
+										<td><code>resize</code></td>
+										<td>TTY for container process is resized</td>
+									</tr>
+									<tr>
+										<td><code>restart</code></td>
+										<td>A container is restarted</td>
+									</tr>
+									<tr>
+										<td><code>start</code></td>
+										<td>A container is started</td>
+									</tr>
+									<tr>
+										<td><code>stop</code></td>
+										<td>A container is sent the stop signal</td>
+									</tr>
+									<tr>
+										<td><code>top</code></td>
+										<td>Processes running in the container are listed</td>
+									</tr>
+									<tr>
+										<td><code>unpause</code></td>
+										<td>The server unpauses a running container</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Image Events</h2>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Image Event</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>delete</code></td>
+										<td>An image layer is deleted from the local repository</td>
+									</tr>
+									<tr>
+										<td><code>import</code></td>
+										<td>An image is imported into a local repository</td>
+									</tr>
+									<tr>
+										<td><code>pull</code></td>
+										<td>An image is pulled from a registry</td>
+									</tr>
+									<tr>
+										<td><code>push</code></td>
+										<td>An image is pushed to a registry</td>
+									</tr>
+									<tr>
+										<td><code>tag</code></td>
+										<td>An image is tagged</td>
+									</tr>
+									<tr>
+										<td><code>untag</code></td>
+										<td>An image is untagged</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+
+
+				</section>
+
+				<section id="docker_inspect">
+					<section>
+						<div>
+							<h2>docker inspect</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The format of the docker inspect command is:</p>
+							<pre><code class="no-highlight">docker inspect [options] container|image [container|image ...]</code></pre>
+							<p>The docker inspect command allows for the retrieval of configuration data for containers and images</p>
+							<p>The following config options are available for docker inspect:</p>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Client Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>-f, --format=””</code></td>
+										<td>Golang text/template to apply to filter the data objects</td>
+									</tr>
+									<tr>
+										<td><code>--type=container|image</code></td>
+										<td>Specifies whether object is a container or an image</td>
+									</tr>
+									<tr>
+										<td><code>-s, --size=false</code></td>
+										<td>When type is container, return the size of its filesystem</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>docker inspect</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>Retrieve the author of the busybox image:</p>
+					<pre><code class="no-highlight"># docker inspect -f '{{.Author}}' busybox
+Jérôme Petazzoni &lt;jerome@docker.com&gt;</code></pre>
+					<p>Retrieve the network mode for the container with ID c263b0c06a99:</p>
+					<pre><code class="no-highlight"># docker inspect -f '{{.HostConfig.NetworkMode}}' c263b0c06a99
+default</code></pre>
+					<p>List all port bindings for the container with ID c263b0c06a99:</p>
+					<pre><code class="no-highlight"># docker inspect -f '{{range $p, $c := .NetworkSettings.Ports}} {{$p}} \
+-> {{(index $c 0).HostPort}} {{end}}' c263b0c06a99
+4100/tcp -> 49158  4200/tcp -> 49159</code></pre>
+						</div>
+					</section>
+				</section>
+
+				<section>
+					<div>
+						<h2>docker logs</h2>
+					</div>
+					<div  style="text-align:left">
+						<p>The format of the docker logs command is:</p>
+						<pre><code class="no-highlight">docker logs [options] container</code></pre>
+						<p>The docker logs command only works with the json-file and journald logging drivers</p>
+						<p>The following config options are available for docker logs:</p>
+					</div>
+					<div>
+						<table class="opts">
+							<thead>
+								<tr>
+									<th>Client Option</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><code>-f, --follow=false</code></td>
+									<td>Follow the container's logs in real-time</td>
+								</tr>
+								<tr>
+									<td><code>--since=false</code></td>
+									<td>Display a container's logs from specific point in time</td>
+								</tr>
+								<tr>
+									<td><code>-t, --timestamps=false</code></td>
+									<td>Prepend a timestamp for each log entry</td>
+								</tr>
+								<tr>
+									<td><code>--tail=”all”</code></td>
+									<td>Display defined number of log entries from the end of the log</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</section>
+
+				<section>
+					<div>
+						<h2>docker stats</h2>
+					</div>
+					<div  style="text-align:left">
+						<p>The format of the docker stats command is:</p>
+						<pre><code class="no-highlight">docker stats [option] container [container ...]</code></pre>
+						<p>The following config option is available for docker stats:</p>
+					</div>
+					<div>
+						<table class="opts">
+							<thead>
+								<tr>
+									<th>Client Option</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><code>--no-stream=false</code></td>
+									<td>Don't display real-time stats, return first sample</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div  style="text-align:left">
+						<p>Example docker stats output:</p>
+						<pre><code class="no-highlight">CONTAINER        CPU %     MEM USAGE / LIMIT     MEM %     NET I/O               BLOCK I/O
+94580bf8e0e8     0.00%     0 B / 0 B             0.00%     0 B / 0 B             0 B / 0 B
+nginx            0.03%     3.228 MB / 4.143 GB   0.08%     7.929 kB / 3.386 kB   127 kB / 0 B
+node1            0.00%     35.91 MB / 4.143 GB   0.87%     9.586 kB / 1.809 kB   0 B / 0 B
+node2            0.00%     37.81 MB / 4.143 GB   0.91%     10.95 kB / 1.559 kB   0 B / 4.096 kB
+node3            0.00%     34.2 MB / 4.143 GB    0.83%     9.325 kB / 1.018 kB   0 B / 0 B
+redis            0.18%     3.24 MB / 4.143 GB    0.08%     9.659 kB / 7.34 kB    28.67 kB / 0 B</code></pre>
+					</div>
+				</section>
+
+				<section>
+					<div>
+						<h2>docker wait</h2>
+					</div>
+					<div  style="text-align:left">
+						<p>The format of the docker wait command is:</p>
+						<pre><code class="no-highlight">docker wait container [container ...]</code></pre>
+						<ul>
+							<li>The docker wait command blocks until each of the specified containers has stopped running</li>
+							<li>The docker wait command has no config options</li>
+						</ul>
+					</div>
+				</section>
+
+				<section id="docker_ps">
+					<section>
+						<div>
+							<h2>docker ps</h2>
+						</div>
+						<div style="text-align:left">
+							<p>The format of the docker ps command is:</p>
+							<pre><code class="no-highlight">docker ps [options]</code></pre>
+							<p>The following config options are available for docker ps:</p>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Client Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>-a, --all=false</code></td>
+										<td>Display all containers irrespective of state</td>
+									</tr>
+									<tr>
+										<td><code>-l, --latest=false</code></td>
+										<td>Display the last created container</td>
+									</tr>
+									<tr>
+										<td><code>-n=-1</code></td>
+										<td>Display the last 'n' created containers</td>
+									</tr>
+									<tr>
+										<td><code>-s, --size=false</code></td>
+										<td>Display the size of the container filesystem</td>
+									</tr>
+									<tr>
+										<td><code>-q, --quiet=false</code></td>
+										<td>Only display the truncated ID of containers and nothing else</td>
+									</tr>
+									<tr>
+										<td><code>--no-trunc=false</code></td>
+										<td>Use whole 256 digit container ID and links in output</td>
+									</tr>
+									<tr>
+										<td><code>--before=””</code></td>
+										<td>Only display containers created before specified container</td>
+									</tr>
+									<tr>
+										<td><code>--since=””</code></td>
+										<td>Only display containers created after specified container</td>
+									</tr>
+									<tr>
+										<td><code>-f, --filter=[]</code></td>
+										<td>Apply filter to output in key/value pair form</td>
+									</tr>
+									<tr>
+										<td><code>--format=[]</code></td>
+										<td>Format output based on Go text/template</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Filter and Format</h2>
+						</div>
+						<div style="text-align:left">
+							<p>The docker ps output can be filtered according to:</p>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Filter Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>id or name</td>
+										<td>Output filtered by container id or name</td>
+									</tr>
+									<tr>
+										<td>label</td>
+										<td>Label key or key/value pair provide filter</td>
+									</tr>
+									<tr>
+										<td>exited</td>
+										<td>Container exit status filter option</td>
+									</tr>
+									<tr>
+										<td>status</td>
+										<td>Current state of container provides filter</td>
+									</tr>
+									<tr>
+										<td>ancestor</td>
+										<td>Filtering based on ancestral image of container</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<div style="text-align:left">
+							<p>Combined filtering and formatting docker ps example:</p>
+							<pre><code class="no-highlight">$ docker ps -a -f status=running --format “table {{.Names}}:\t{{.Image}}\t{{.Status}}”
+NAMES               IMAGE                  STATUS
+nginx:              dockerworkflow_nginx   Up About an hour
+node1:              dockerworkflow_node1   Up About an hour
+node3:              dockerworkflow_node3   Up About an hour
+node2:              dockerworkflow_node2   Up About an hour
+redis:              redis                  Up About an hour</code></pre>
+						</div>
+					</section>
+				</section>
+
+				<section>
+					<div>
+						<h2>docker diff</h2>
+					</div>
+					<div  style="text-align:left">
+						<p>The format of the docker diff command is:</p>
+						<pre><code class="no-highlight">docker diff container</code></pre>
+						<p>The docker diff command details any file changes made to the container since it was created:</p>
+						<ul>
+							<li>C: file or directory has been changed or modified</li>
+							<li>A: file or directory has been added</li>
+							<li>D: file or directory has been deleted</li>
+						</ul>
+					</div>
+				</section>
+
+				<section>
+					<div>
+						<h2>docker top</h2>
+					</div>
+					<div  style="text-align:left">
+						<p>The format of the docker top command is:</p>
+						<pre><code class="no-highlight">docker top container [ps options]</code></pre>
+						<p>Displays the process(es) running inside the container<p>
+						<p>Options associated with the 'ps' command can be passed to format output:</p>
+						<pre><code class="no-highlight">$ docker top 40565f5d2b81 -e
+PID                 TTY                 TIME                CMD
+11101               ?                   00:00:28            grunt</code></pre>
+					</div>
+				</section>
+
+				<section>
+					<div>
+						<h2>docker port</h2>
+					</div>
+					<div  style="text-align:left">
+						<p>The format of the docker port command is:</p>
+						<pre><code class="no-highlight">docker port container [port[/tcp|udp]]</code></pre>
+						<p>The docker port command provides the container to host port mappings</p>
+						<p>A docker port example:</p>
+						<pre><code class="no-highlight">$ docker port 4d9496628cad
+4100/tcp -> 0.0.0.0:49158
+4300/tcp -> 0.0.0.0:49157</code></pre>
+					</div>
+				</section>
+
+				<section>
+					<div>
+						<h2>docker cp</h2>
+					</div>
+					<div  style="text-align:left">
+						<p>The formats of the docker cp command are:</p>
+						<pre><code class="no-highlight">docker cp container:path hostpath|-</code></pre>
+						<pre><code class="no-highlight">docker cp hostpath|-  container:path</code></pre>
+						<p>Some docker cp examples:</p>
+						<pre><code class="no-highlight">$ docker cp 199cfb97c339:/etc/nginx/nginx.conf .
+$ docker cp ./nginx.conf 199cfb97c339:/etc/nginx/
+$ docker cp 199cfb97c339:/data - | tar -xvf -
+$ cat data.tar | docker cp - 199cfb97c339:/data</code></pre>
+					</div>
+				</section>
+
+				<section>
+					<img src="media/Lab_Exercise.svg" alt="Lab Exercise" />
+					<h3>Lab Exercise:</h3>
+					<h3>Working With Container Utilities</h3>
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				slideNumber: 'h.v',
+				progress: false,
+				history: false,
+				center: true,
+
+				transition: 'fade', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>

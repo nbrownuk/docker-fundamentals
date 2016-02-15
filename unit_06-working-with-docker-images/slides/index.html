@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Docker Fundamentals</title>
+
+		<meta name="description" content="Unit 6: Working With Docker Images">
+		<meta name="author" content="Nigel Brown">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/custom.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+
+				<section class="cover" data-background="media/Felixstowe_Port.jpg">
+					<h2 style="color:white; text-shadow: 0 1px 0 black">Docker Fundamentals</h2>
+				</section>
+
+				<section id="title">
+					<h2>Unit 5</h2>
+					<h2>Working With Docker Images</h2>
+				</section>
+
+				<section id="unit_outline">
+					<section id="objectives">
+						<div>
+							<h2>Objectives</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>Upon completion of this unit, you will be able to:</p>
+							<ul>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="1">Explain how to find and use relevant Docker images</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="2">Create new Docker images based on a container's filesystem</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="3">Determine the composition of Docker images</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="4">Describe how to manage Docker images and their characteristics</li>
+							</ul>
+						</div>
+					</section>
+
+					<section id="agenda">
+						<div>
+							<h2>Agenda</h2>
+						</div>
+						<div style="text-align:left">
+							<p>The following topics will be covered in this unit:</p>
+							<ul>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="1">Finding, using and pulling Docker images</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="2">Creating images from containers</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="3">Retrieving image information</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="4">Managing image sizes</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="5">Archiving images</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="6">Removing and tagging images</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="7">Lab Exercise: Working With Docker Images</li>
+							</ul>
+						</div>
+					</section>
+				</section>
+
+				<section id="finding_pulling_using_images">
+					<section>
+						<div>
+							<h2>Using Docker Images</h2>
+						</div>
+						<div style="width:100%">
+							<div class="fragment fade-in" data-fragment-index="1" style="width:50%; float:left">
+								<img src="media/Image_By_Commit.svg" alt="Image By Commit" />
+							</div>
+							<div class="fragment fade-in" data-fragment-index="2" style="width:50%; float:right">
+								<img src="media/Image_By_Dockerfile.svg" alt="Image By Dockerfile" />
+							</div>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Search for Docker Images</h2>
+						</div>
+						<div>
+							<img src="media/Registry_Search.png" alt="Searching the Docker Hub Registry" />
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>docker search</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The format of the docker search command is:</p>
+							<pre><code class="no-highlight">docker search [options] term</code></pre>
+							<p>The docker search command provides a search capability for images hosted on the Docker Hub registry</p>
+							<p>The following config options are available for docker search:</p>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Client Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>--automated=false</code></td>
+										<td>Only return results for images automatically built by Docker Hub</td>
+									</tr>
+									<tr>
+										<td><code>--no-trunc=false</code></td>
+										<td>Don't truncate the description field in search results</td>
+									</tr>
+									<tr>
+										<td><code>-s, --stars=0</code></td>
+										<td>Returns images with at least the number of stars specified</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+				</section>
+
+				<section>
+					<div>
+						<h2>docker pull</h2>
+					</div>
+					<div  style="text-align:left">
+						<p>The format of the docker pull command is:</p>
+						<pre><code class="no-highlight">docker pull [option] [registry[:port]/]image[:tag]</code></pre>
+						<p>The docker pull command retrieves the specified image from the addressed registry</p>
+						<p>The following config options are available for docker pull:</p>
+					</div>
+					<div>
+						<table class="opts">
+							<thead>
+								<tr>
+									<th>Client Option</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><code>-a, --all-tags=false</code></td>
+									<td>Pull all images within the repository</td>
+								</tr>
+								<tr>
+									<td><code>--disable-content-trust=true</code></td>
+									<td>Disable content trust checking on the specified image</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</section>
+
+				<section id="docker_commit">
+					<section>
+						<div>
+							<h2>Images from Containers</h2>
+						</div>
+						<div>
+							<img src="media/Image_By_Commit_Example.svg" alt="Image Commit" />
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>docker commit</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The format of the docker commit command is:</p>
+							<pre><code class="no-highlight">docker commit [options] container [repository[:tag]]</code></pre>
+							<p>The docker commit command creates a new image from an existing container</p>
+							<p>The following config options are available for docker commit:</p>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Client Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>-a, --author=””</code></td>
+										<td>Adds author to metadata of the image</td>
+									</tr>
+									<tr>
+										<td><code>-c, --change=[]</code></td>
+										<td>Alter characteristics of image with Dockerfile instruction</td>
+									</tr>
+									<tr>
+										<td><code>-m, --message=””</code></td>
+										<td>Adds message to the metadata of the image</td>
+									</tr>
+									<tr>
+										<td><code>-p, --pause=true</code></td>
+										<td>Don't pause the container during the commit process</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+				</section>
+
+				<section id="listing_image_information">
+					<section>
+						<div>
+							<h2>docker images</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The format of the docker images command is:</p>
+							<pre><code class="no-highlight">docker images [options] [[repository]:tag]</code></pre>
+							<p>The docker images command provides information concerning the images stored in the local repositories</p>
+							<p>The following config options are available for docker images:</p>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Client Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>-a, --all=false</code></td>
+										<td>Information for all image layers is displayed </td>
+									</tr>
+									<tr>
+										<td><code>--digests=false</code></td>
+										<td>Display digests for images pulled by digest rather than tag</td>
+									</tr>
+									<tr>
+										<td><code>-f, --filter=[]</code></td>
+										<td>Apply the specified filter to the image information</td>
+									</tr>
+									<tr>
+										<td><code>--no-trunc=false</code></td>
+										<td>Don't truncate the image ID in the output</td>
+									</tr>
+									<tr>
+										<td><code>-q, --quiet=false</code></td>
+										<td>Only display the ID of the image in the output</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Listing Image Info</h2>
+						</div>
+						<div style="text-align:left">
+							<p>The output of the docker images command with no config options specified:</p>
+							<pre><code class="no-highlight">REPOSITORY      TAG        IMAGE ID       CREATED          VIRTUAL SIZE
+my_redis        latest     ebb4d274ca4e   5 seconds ago    612.9 MB
+fedora          latest     597717fc21bd   5 weeks ago      204 MB</code></pre>
+					<p>The output of the docker images command with the -a config option specified:</p>
+					<pre><code class="no-highlight">
+REPOSITORY      TAG        IMAGE ID       CREATED          VIRTUAL SIZE
+my_redis        latest     ebb4d274ca4e   4 minutes ago    612.9 MB
+&lt;none&gt;          &lt;none&gt;     41de26ebb824   5 minutes ago    596.4 MB
+fedora          latest     597717fc21bd   5 weeks ago      204 MB
+&lt;none&gt;          &lt;none&gt;     369aca82a5c0   5 months ago     0 B</code></pre>
+						</div>
+					</section>
+				</section>
+
+				<section>
+					<div>
+						<h2>docker history</h2>
+					</div>
+					<div  style="text-align:left">
+						<p>The format of the docker history command is:</p>
+						<pre><code class="no-highlight">docker history [options] image</code></pre>
+						<p>The docker history command provides details of the layers that make up the image specified</p>
+						<p>The following config options are available for docker history:</p>
+					</div>
+					<div>
+						<table class="opts">
+							<thead>
+								<tr>
+									<th>Client Option</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><code>--no-trunc=false</code></td>
+									<td>Don't truncate the ID associated with the image</td>
+								</tr>
+								<tr>
+									<td><code>-q, --quiet=false</code></td>
+									<td>Only display the ID of each of the layers of the image</td>
+								</tr>
+								<tr>
+									<td><code>-H, --human=true</code></td>
+									<td>Display image layer sizes in bytes rather than human readable form</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</section>
+
+				<section>
+					<div>
+						<h2>Docker Image Size</h2>
+					</div>
+					<div  style="text-align:left">
+						<ul>
+							<li>Care should be taken when creating images, so as to minimise the size of the created image</li>
+							<li>Files added to an ancestral image layer may not be visible in a container, but will remain within the image</li>
+							<li>Numerous techniques exist for 'flattening' images</li>
+					</ul>
+					</div>
+					<div  style="text-align:left">
+						<p>Output of my_redis image after cleaning the cache:</p>
+						<pre><code class="no-highlight">REPOSITORY     TAG         IMAGE ID        CREATED         VIRTUAL SIZE
+my_redis       latest      e0f2e84fd38d    49 seconds ago  615 MB
+&lt;none&gt;         &lt;none&gt;      ebb4d274ca4e    2 hours ago     612.9 MB
+&lt;none&gt;         &lt;none&gt;      41de26ebb824    2 hours ago     596.4 MB</code></pre>
+					</div>
+				</section>
+
+				<section>
+					<div>
+						<h2>Import/Export Images</h2>
+					</div>
+					<div  style="text-align:left">
+						<p>The format of the docker import command is:</p>
+						<pre><code class="no-highlight">docker import [options] file|URL|- [repository[:tag]]</code></pre>
+						<p>The config options available for docker import are:</p>
+					</div>
+					<div>
+						<table class="opts">
+							<thead>
+								<tr>
+									<th>Client Option</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><code>-c, --change=[]</code></td>
+									<td>Alter characteristics of image with Dockerfile instruction</td>
+								</tr>
+								<tr>
+									<td><code>-m, --message=””</code></td>
+									<td>Adds message to the metadata of the created image</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div  style="text-align:left">
+						<p>The format of the docker export command is:</p>
+						<pre><code class="no-highlight">docker export container</code></pre>
+						<p>The single config option available for docker export is:</p>
+					</div>
+					<div>
+						<table class="opts">
+							<thead>
+								<tr>
+									<th>Client Option</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><code>-o, --output=""</code></td>
+									<td>Specifies a file to export the container filesystem to</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</section>
+
+				<section>
+					<div>
+						<h2>Archiving Images</h2>
+					</div>
+					<div  style="text-align:left">
+						<p>The format of the docker save command is:</p>
+						<pre><code class="no-highlight">docker save [option] image [image ...]</code></pre>
+						<p>The single config option available for docker save is:</p>
+					</div>
+					<div>
+						<table class="opts">
+							<thead>
+								<tr>
+									<th>Client Option</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><code>-o, --output=””</code></td>
+									<td>Specifies a file to write the image archive(s) to instead of STDOUT</td>
+								</tr>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div  style="text-align:left">
+						<p>The format of the docker load command is:</p>
+						<pre><code class="no-highlight">docker load [option]</code></pre>
+						<p>The single config option available for docker load is:</p>
+					</div>
+					<div>
+						<table class="opts">
+							<thead>
+								<tr>
+									<th>Client Option</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><code>-i, --input=””</code></td>
+									<td>Specifies a file to load images from instead of STDIN</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</section>
+
+				<section>
+					<div>
+						<h2>docker tag</h2>
+					</div>
+					<div  style="text-align:left">
+						<p>The format of the docker tag command is:</p>
+						<pre><code class="no-highlight">docker tag [option] image[:tag] [registry/][username/]image[:tag]</code></pre>
+						<p>The docker tag command provides a new tag for the image specified</p>
+						<p>The new tag can reference a completely different repository than the one specified in the source image</p>
+						<p>The single config option available for docker tag is:</p>
+					</div>
+					<div>
+						<table class="opts">
+							<thead>
+								<tr>
+									<th>Client Option</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><code>-f, --force=false</code></td>
+									<td>Force tagging image even though similar tag exists in repository</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</section>
+
+				<section>
+					<div>
+						<h2>docker rmi</h2>
+					</div>
+					<div  style="text-align:left">
+						<p>The format of the docker rmi command is:</p>
+						<pre><code class="no-highlight">docker rmi [options] image [image ...]</code></pre>
+						<p>The docker rmi command removes images and layers from the local repositories of the Docker host</p>
+						<p>The config options available for docker rmi are:</p>
+					</div>
+					<div>
+						<table class="opts">
+							<thead>
+								<tr>
+									<th>Client Option</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><code>-f, --force=false</code></td>
+									<td>Force removal of image even though a derived container exists</td>
+								</tr>
+								<tr>
+									<td><code>--no-prune=false</code></td>
+									<td>Do not remove untagged parent image layers</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</section>
+
+				<section>
+					<img src="media/Lab_Exercise.svg" alt="Lab Exercise" />
+					<h3>Lab Exercise:</h3>
+					<h3>Working With Docker Images</h3>
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				slideNumber: 'h.v',
+				progress: false,
+				history: false,
+				center: true,
+
+				transition: 'fade', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
