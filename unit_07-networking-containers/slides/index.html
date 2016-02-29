@@ -1,0 +1,800 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Docker Fundamentals</title>
+
+		<meta name="description" content="Unit 7: Networking With Docker">
+		<meta name="author" content="Nigel Brown">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/custom.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+
+				<section class="cover" data-background="media/Felixstowe_Port.jpg">
+					<h2 style="color:white; text-shadow: 0 1px 0 black">Docker Fundamentals</h2>
+				</section>
+
+				<section id="title">
+					<h2>Unit 7</h2>
+					<h2>Networking With Docker</h2>
+				</section>
+
+				<section id="unit_outline">
+					<section id="objectives">
+						<div>
+							<h2>Objectives</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>Upon completion of this unit, you will be able to:</p>
+							<ul>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="1">Describe Docker's approach to networking containers</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="2">Distinguish between legacy and current networking modes</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="3">Manipulate Docker networks with the docker network command</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="4">Detail how to expose a container's service for consumption</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="5">Configure name and lookup services for containers</li>
+							</ul>
+						</div>
+					</section>
+
+					<section id="agenda">
+						<div>
+							<h2>Agenda</h2>
+						</div>
+						<div style="text-align:left">
+							<p>The following topics will be covered in this unit:</p>
+							<ul>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="1">Networking Overview</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="2">Enabling Container Networking</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="3">Legacy Networking</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="4">Common Network Model</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="5">The docker network Commands</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="6">Network Types</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="7">Exposing Container Ports</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="8">Names and Name Resolution</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="9">The docker-proxy</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="10">Lab Exercise: Networking Containers</li>
+							</ul>
+						</div>
+					</section>
+				</section>
+
+				<section>
+					<div>
+						<h2>Networking Overview</h2>
+					</div>
+					<div style="width:100%">
+						<div style="width:25%; float:left">
+							<img src="media/Single_Host_Networking.svg" alt="Single Host Networking" />
+						</div>
+						<div style="width:75%; float:right">
+							<ul>
+								<li>Up until Docker 1.9, native Docker networking was confined to a single host</li>
+								<li>Whilst possible, cross Docker host container communication required additional techniques and tools</li>
+							</ul>
+						</div>
+					</div>
+					<div style="width:100%; clear:both">
+						<div style="width:25%; float:left">
+							<img src="media/Multi_Host_Networking.svg" alt="Multi Host Networking" />
+						</div>
+						<div style="width:75%; float:right">
+							<ul>
+								<li>In Docker 1.9, networking became a first class citizen in the Docker environment</li>
+								<li>Containers can share an overlay network, a local bridged network, the host's stack, or a third-party plugin network</li>
+							</ul>
+						</div>
+					</div>
+				</section>
+
+				<section>
+					<div>
+						<h2>Enabling Container Networking</h2>
+					</div>
+					<div  style="text-align:left">
+						<p>The Docker host needs to be able to route packets to containers, and requires the kernel config parameter net.ipv4.ip_forward to be enabled</p>
+						<table class="opts">
+							<thead>
+								<tr>
+									<th>Daemon Option</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><code>--ip-forward=true</code></td>
+									<td>Enables forwarding of packets to and from containers</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div>
+						<div  style="text-align:left">
+							<p>Docker uses netfilter rules for the purposes of network address translation, and for isolating networks</p>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Daemon Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>--iptables=true</code></td>
+										<td>Enables Docker to create FILTER and NAT table netfilter rules</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+				</section>
+
+				<section id="legacy_networking">
+					<section>
+						<div>
+							<h2>Legacy Networking</h2>
+						</div>
+						<div style="width:100%">
+							<img src="media/Bridge_Networking.svg" alt="Bridge Networking" />
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Client Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>--net="bridge"</code></td>
+										<td>Defines the network that the container will connect to</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Legacy Networking</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>To specify that a container share the host's network stack, use --net=host, e.g.:</p>
+							<pre><code class="no-highlight">$ docker create -it --net=host ubuntu:latest /bin/bash</code></pre>
+							<p>To specify that a container is created with no network stack, use --net=none, e.g.:</p>
+							<pre><code class="no-highlight">$ docker create -it --net=none ubuntu:latest /bin/bash</code></pre>
+							<p>To specify that a container share another, running container's stack, use --net=container:&lt;ID&gt;, e.g.:</p>
+							<pre><code class="no-highlight">$ docker create -it --net=container:b7996032a89c ubuntu:latest \
+/bin/bash</code></pre>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Legacy Linking</h2>
+						</div>
+						<div style="width:100%">
+							<img src="media/Links.svg" alt="Container Linking" />
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Client Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>--link=[]</code></td>
+										<td>Set up private communication channel with container via link</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Data Shared Via Linking</h2>
+						</div>
+						<div style="width:100%">
+							<img src="media/Link_Variables.svg" alt="Variables Via Linking" />
+						</div>
+					</section>
+				</section>
+
+				<section>
+					<div>
+						<h2>Common Network Model</h2>
+					</div>
+					<div>
+						<img src="media/Common_Network_Model.svg" alt="Common Network Model" />
+					</div>
+					<div>
+						<p>Endpoints connect a container's sandbox to a network</p>
+					</div>
+				</section>
+
+				<section id="docker_network_commands">
+					<section>
+						<div>
+							<h2>docker network</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The docker network command is used for manipulating Docker networks, and has a series of sub-commands</p>
+							<p>The format of the docker network command is:</p>
+							<pre><code class="no-highlight">docker network sub-command [options] ...</code></pre>
+							<p>The following sub-commands are available for docker network:</p>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Sub-Command</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>create</code></td>
+										<td>Create new Docker networks (bridge or overlay)</td>
+									</tr>
+									<tr>
+										<td><code>rm</code></td>
+										<td>Delete a user-defined Docker network</td>
+									</tr>
+									<tr>
+										<td><code>connect</code></td>
+										<td>Attach a pre-existing container to a pre-existing network</td>
+									</tr>
+									<tr>
+										<td><code>disconnect</code></td>
+										<td>Disconnect a container from a network</td>
+									</tr>
+									<tr>
+										<td><code>ls</code></td>
+										<td>Display summary information for existing Docker networks</td>
+									</tr>
+									<tr>
+										<td><code>inspect</code></td>
+										<td>Display configuration information related to Docker networks</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>docker network create</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>Format of the docker network create sub-command is:</p>
+							<pre><code class="no-highlight">docker network create [options] name</code></pre>
+							<p>The following config options are available for docker network create:</p>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Client Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>--aux-address=map[]</code></td>
+										<td>Auxiliary addresses used by the network driver</td>
+									</tr>
+									<tr>
+										<td><code>-d, --driver=bridge</code></td>
+										<td>Driver to use for network, which characterises the network</td>
+									</tr>
+									<tr>
+										<td><code>--gateway=[]</code></td>
+										<td>Defines a gateway(s) to apply for network communication</td>
+									</tr>
+									<tr>
+										<td><code>--internal</code></td>
+										<td>Disable access from outside of the network</td>
+									</tr>
+									<tr>
+										<td><code>--ip-range=[]</code></td>
+										<td>IP address range to use for allocation to containers</td>
+									</tr>
+									<tr>
+										<td><code>--ipam-driver=default</code></td>
+										<td>Driver to use for IP address management</td>
+									</tr>
+									<tr>
+										<td><code>--ipam-opt=map[]</code></td>
+										<td>Options to pass to the IPAM driver specified</td>
+									</tr>
+									<tr>
+										<td><code>-o, --opt=map[]</code></td>
+										<td>Options to pass to the network driver specified</td>
+									</tr>
+									<tr>
+										<td><code>--subnet=[]</code></td>
+										<td>Defines IP subnet(s) to be applied to the network</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>docker network rm &amp; ls</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The format of the docker network rm sub-command is:</p>
+							<pre><code class="no-highlight">docker network rm name [name ...]</code></pre>
+							<p>There are no config options for docker network rm</p>
+							<p>The format of the docker network ls sub-command is:</p>
+							<pre><code class="no-highlight">docker network ls [options]</code></pre>
+							<p>The following config options are available for docker network ls:</p>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Client Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>-f, --filter=[]</code></td>
+										<td>Filter output based on specified criteria</td>
+									</tr>
+									<tr>
+										<td><code>--no-trunc=false</code></td>
+										<td>Don't truncate the network IDs in the output</td>
+									</tr>
+									<tr>
+										<td><code>-q, --quiet=false</code></td>
+										<td>Suppress output to just the network IDs for each network</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>docker network connect</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The format of the docker network connect sub-command is:</p>
+							<pre><code class="no-highlight">docker network connect [options] network container</code></pre>
+							<p>The following config options are available for docker network connect:</p>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Client Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>--alias=[]</code></td>
+										<td>Create network specific alias for the container</td>
+									</tr>
+									<tr>
+										<td><code>--ip=""</code></td>
+										<td>Specify an IPv4 address to use from user-defined IP subnet</td>
+									</tr>
+									<tr>
+										<td><code>--ip6=""</code></td>
+										<td>Specify an IPv6 address to use from user-defined IP subnet</td>
+									</tr>
+									<tr>
+										<td><code>--link=[]</code></td>
+										<td>Create a link to the specified container</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>docker network disconnect</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The format of the docker network disconnect sub-command is:</p>
+							<pre><code class="no-highlight">docker network disconnect [option] network container</code></pre>
+							<p>The following config options are available for docker network disconnect:</p>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Client Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>-f, --force=false</code></td>
+										<td>Forcefully disconnect the container from the network</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>docker network inspect</h2>
+						</div>
+						<div style="text-align:left">
+							<p>Format of the docker network inspect sub-command is:</p>
+							<pre><code class="no-highlight">docker network inspect [option] network [network ...]]</code></pre>
+							<p>The following config option is available for docker network inspect:</p>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Client Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>-f, --format=""</code></td>
+										<td>Apply a Go text/template to filter results</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<div style="text-align:left">
+							<p>To list the IP subnet for a given bridge network:</p>
+							<pre><code class="no-highlight">$ docker network inspect -f '{{(index .IPAM.Config 0).Subnet}}' local_bridge
+172.22.0.0/16</code></pre>
+						</div>
+					</section>
+				</section>
+
+				<section id="docker_network_types">
+					<section>
+						<div>
+							<h2>Bridge Networks</h2>
+						</div>
+						<div style="text-align:left">
+							<p>To create a local user-defined bridge network:</p>
+							<pre><code class="no-highlight">$ docker network create -d bridge local_bridge
+746ab1cf50b598b81bbb55491e0bef4c18369cf59fd933bb5fddd1736710b300</code></pre>
+							<p>The --link config option provides a private alias:</p>
+							<pre><code class="no-highlight">$ docker run -d --name provider --net local_bridge gcr.io/google-containers/pause
+a21d9881993463276834e9e962da43657cb898b764c60a25375b5341b193c627
+$ docker run -it --name consumer --link provider:giver --net local_bridge busybox sh
+/ # ping -q -c 1 provider
+PING provider (172.22.0.2): 56 data bytes
+
+--- provider ping statistics ---
+1 packets transmitted, 1 packets received, 0% packet loss
+round-trip min/avg/max = 0.110/0.110/0.110 ms
+/ # ping -q -c 1 giver
+PING giver (172.22.0.2): 56 data bytes
+
+--- giver ping statistics ---
+1 packets transmitted, 1 packets received, 0% packet loss
+round-trip min/avg/max = 0.166/0.166/0.166 ms</code></pre>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Bridge Networks</h2>
+						</div>
+						<div style="text-align:left">
+							<p>Bridge customisation can be realised with the -o, --opt config option:</p>
+							<pre><code class="no-highlight">$ docker network create -d bridge \
+-o "com.docker.network.bridge.enable_icc=false" local_bridge</code></pre>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Client Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>com.docker.network.bridge.name</code></td>
+										<td>Set bridge name</td>
+									</tr>
+									<tr>
+										<td><code>com.docker.network.bridge.enable_ip_masquerade</code></td>
+										<td>Enable IP masquerading</td>
+									</tr>
+									<tr>
+										<td><code>com.docker.network.bridge.enable_icc</code></td>
+										<td>Enable inter-container comms</td>
+									</tr>
+									<tr>
+										<td><code>com.docker.network.bridge.host_binding_ipv4</code></td>
+										<td>Interface for port binding</td>
+									</tr>
+									<tr>
+										<td><code>com.docker.network.mtu</code></td>
+										<td>Sets MTU for network</td>
+									</tr>
+									<tr>
+										<td><code>com.docker.network.enable_ipv6</code></td>
+										<td>Enables IPv6 networking</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Overlay Networks</h2>
+						</div>
+						<div>
+							<p>Overlay networks are VXLANs connecting different Docker hosts, and require a key/value store to hold state</p>
+						</div>
+						<div style="width:100%">
+							<img src="media/KV_Logos.svg" alt="KV Store Logos" />
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Client Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>--cluster-store=""</code></td>
+										<td>Provides the Docker engine with the URL of the key/value store</td>
+									</tr>
+									<tr>
+										<td><code>--cluster-advertise=""</code></td>
+										<td>The host:port or interface:port combination for the daemon</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Overlay Networks</h2>
+						</div>
+						<div style="width:100%">
+							<img src="media/Overlay_Networking.svg" alt="Overlay Networking" />
+						</div>
+					</section>
+				</section>
+
+
+				<section>
+					<div>
+						<h2>Exposing Container Ports</h2>
+					</div>
+					<div style="text-align:left">
+						<ul>
+							<li>A container's service is made available by exposing a port or ports</li>
+							<li>Ports can be exposed just for local consumption, or forwarded to the host for wider scope</li>
+							<li>Mapping of forwarded ports can be delegated to the Docker daemon, or controlled by the user</li>
+						</ul>
+					</div>
+					<div>
+						</br>
+						<table class="opts">
+							<thead>
+								<tr>
+									<th>Client Option</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><code>--expose=[]</code></td>
+									<td>Expose the container's specified port</td>
+								</tr>
+								<tr>
+									<td><code>-P, --publish-all=false</code></td>
+									<td>Exposed ports are forwarded to all of the host's interfaces</td>
+								</tr>
+								<tr>
+									<td><code>-p, --publish=[]</code></td>
+									<td>Forward container port, and map to specific host port</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</section>
+
+				<section id="names_and_name_resolution">
+					<section>
+						<div>
+							<h2>Names &amp; Name Resolution</h2>
+						</div>
+						<div  style="text-align:left">
+							<p style="color: #a23"><strong>Legacy Bridge Network</strong></p>
+							<ul><li>Following files bind-mounted into container:</li></ul>
+							<pre><code class="no-highlight">/etc/hosts
+/etc/hostname
+/etc/resolv.conf</code></pre>
+							<ul>
+								<li>Contents of /etc/resolv.conf based on host's copy</li>
+								<li>DNS config changes propagated from host to container</li>
+								<li>Changes take effect on container restart</li>
+								<li>Local nameserver passed over for Google public DNS</li>
+							</ul>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Names &amp; Name Resolution</h2>
+						</div>
+						<div  style="text-align:left">
+							<p style="color: #a23"><strong>User Defined Network</strong></p>
+							<ul>
+								<li>Containers can have different names and aliases for the different networks it is connected to</li>
+								<li>Docker provides an embedded DNS server for container name resolution</li>
+								<li>The DNS service listens on socket 127.0.0.11:53</li>
+								<li>A container's DNS config is maintained by the embedded DNS server</li>
+							</ul>
+						</div>
+						<div>
+							</br>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Client Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>--net-alias=[]</code></td>
+										<td>An alias for the container on a give user-defined network</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>DNS Customisation</h2>
+						</div>
+						<div style="text-align:left">
+							<ul>
+								<li>Custom DNS settings can be applied using --dns, --dns-search and --dns-opt config options</li>
+								<li>Settings can be applied per container as options to Docker client commands (e.g. docker run)</li>
+								<li>Options can be applied to the daemon, for default, system wide application</li>
+							</ul>
+						</div>
+						<div>
+							</br>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Client/Daemon Option</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>--dns=[]</code></td>
+										<td>IP address of a DNS nameserver to use for resolving names</td>
+									</tr>
+									<tr>
+										<td><code>--dns-search=[]</code></td>
+										<td>Domain name to apply for extending search for unqualified name</td>
+									</tr>
+									<tr>
+										<td><code>--dns-opt=[]</code></td>
+										<td>DNS options to be used by a container's name resolvers</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+				</section>
+
+				<section>
+					<div>
+						<h2>docker-proxy</h2>
+					</div>
+					<div style="width:100%">
+						<img src="media/Iptables_Proxy.svg" alt="Userland docker-proxy" />
+					</div>
+					<div>
+						<table class="opts">
+							<thead>
+								<tr>
+									<th>Daemon Option</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><code>--userland-proxy=true</code></td>
+									<td>Specifies whether to use the userland proxy process</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+                                slideNumber: 'h.v',
+				progress: false,
+				history: false,
+				center: true,
+
+				transition: 'fade', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
