@@ -187,9 +187,7 @@
 					<section>
 						<div>
 							<h2>Legacy Networking</h2>
-						</div>
-						<div  style="text-align:left">
-							<p>To specify that a container share the host's network stack, use --net=host, e.g.:</p>
+						</div>pink floyack, use --net=host, e.g.:</p>
 							<pre><code class="no-highlight">$ docker create -it --net=host ubuntu:latest /bin/bash</code></pre>
 							<p>To specify that a container is created with no network stack, use --net=none, e.g.:</p>
 							<pre><code class="no-highlight">$ docker create -it --net=none ubuntu:latest /bin/bash</code></pre>
@@ -301,7 +299,7 @@
 						</div>
 						<div  style="text-align:left">
 							<p>Format of the docker network create sub-command is:</p>
-							<pre><code class="no-highlight">docker network create [options] name</code></pre>
+							<pre><code class="no-highlight">docker network create [options] network</code></pre>
 							<p>The following config options are available for docker network create:</p>
 						</div>
 						<div>
@@ -360,7 +358,7 @@
 						</div>
 						<div  style="text-align:left">
 							<p>The format of the docker network rm sub-command is:</p>
-							<pre><code class="no-highlight">docker network rm name [name ...]</code></pre>
+							<pre><code class="no-highlight">docker network rm network [network ...]</code></pre>
 							<p>There are no config options for docker network rm</p>
 							<p>The format of the docker network ls sub-command is:</p>
 							<pre><code class="no-highlight">docker network ls [options]</code></pre>
@@ -761,6 +759,12 @@ round-trip min/avg/max = 0.166/0.166/0.166 ms</code></pre>
 							</tbody>
 						</table>
 					</div>
+				</section>
+
+				<section>
+					<img src="media/Lab_Exercise.svg" alt="Lab Exercise" />
+					<h3>Lab Exercise:</h3>
+					<h3>Networking Containers</h3>
 				</section>
 
 			</div>
