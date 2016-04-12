@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Docker Fundamentals</title>
+
+		<meta name="description" content="Unit 9: Building Images With Dockerfiles">
+		<meta name="author" content="Nigel Brown">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/custom.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+
+				<section class="cover" data-background="media/Felixstowe_Port.jpg">
+					<h2 style="color:white; text-shadow: 0 1px 0 black">Docker Fundamentals</h2>
+				</section>
+
+				<section id="title">
+					<h2>Unit 9</h2>
+					<h2>Building Images With Dockerfiles</h2>
+				</section>
+
+				<section id="unit_outline">
+					<section id="objectives">
+						<div>
+							<h2>Objectives</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>Upon completion of this unit, you will be able to:</p>
+							<ul>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="1">Describe how the image build process works, using Dockerfiles in conjunction with the docker build command</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="2">Detail the Dockerfile instruction set, and the purpose of each instruction</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="3">Define an appropriate configuration of command-oriented Dockerfile instructions</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="4">Describe how Docker utilises an image cache for build efficiency</li>
+							</ul>
+						</div>
+					</section>
+
+					<section id="agenda">
+						<div>
+							<h2>Agenda</h2>
+						</div>
+						<div style="text-align:left">
+							<p>The following topics will be covered in this unit:</p>
+							<ul>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="1">Overview of Building Images With Dockerfiles</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="2">The docker build Command</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="3">The Dockerfile Instruction Set</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="4">The Build Cache</li>
+								<li class="fragment highlight-current-blue visible" data-fragment-index="5">Lab exercise: Building an Image With a Dockerfile</li>
+							</ul>
+						</div>
+					</section>
+				</section>
+
+				<section id="docker_build">
+					<section>
+						<div>
+							<h2>Building Docker Images</h2>
+						</div>
+						<div style="width:100%">
+							<img src="media/Dockerfile_Build_Context.svg" alt="Dockerfile Build Context" />
+						</div>
+						<div style="clear:both">
+							<p>Build context sent to daemon as tar archive</p>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Local Build Context</h2>
+						</div>
+						<div style="width:100%">
+							<div style="width:50%; float:left">
+								<img src="media/Project_Structures.svg" alt="Project Structures" />
+								<small>Example Project Structure</small>
+							</div>
+							<div style="width:50%; float: right">
+								<img src="media/dockerignore.svg" alt=".dockerignore" />
+								<small>Example .dockerignore File</small>
+							</div>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Git Build Context</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>A URL for a remote Git repo can contain a fragment, with a context and optional sub-directory for the build:</p>
+							<pre><code class="no-highlight">https://path/to/repo/repo.git#context:sub-dir</code></pre>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>URL</th>
+										<th>Commit</th>
+										<th>Sub-Directory</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>repo.git</code></td>
+										<td><code>refs/heads/master</code></td>
+										<td><code>/</code></td>
+									</tr>
+									<tr>
+										<td><code>repo.git#tag</code></td>
+										<td><code>refs/tags/tag</code></td>
+										<td><code>/</code></td>
+									</tr>
+									<tr>
+										<td><code>repo.git#branch</code></td>
+										<td><code>refs/heads/branch</code></td>
+										<td><code>/</code></td>
+									</tr>
+									<tr>
+										<td><code>repo.git#232e26f</code></td>
+										<td><code>SHA1 hash = 232e26f</code></td>
+										<td><code>/</code></td>
+									</tr>
+									<tr>
+										<td><code>repo.git:sub-dir</code></td>
+										<td><code>refs/heads/master</code></td>
+										<td><code>/sub-dir</code></td>
+									</tr>
+									<tr>
+										<td><code>repo.git#tag:sub-dir</code></td>
+										<td><code>refs/tags/tag</code></td>
+										<td><code>/sub-dir</code></td>
+									</tr>
+									<tr>
+										<td><code>repo.git#branch:sub-dir</code></td>
+										<td><code>refs/heads/branch</code></td>
+										<td><code>/sub-dir</code></td>
+									</tr>
+									<tr>
+										<td><code>repo.git#232e26f:sub-dir</code></td>
+										<td><code>SHA1 hash = 232e26f</code></td>
+										<td><code>/sub-dir</code></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>docker build</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The format of the docker build command is:</p>
+							<pre><code class="no-highlight">docker build [options] path|URL|-</code></pre>
+							<p>The config options available for the docker build command are:</p>
+						</div>
+						<div>
+							<table class="opts">
+								<thead>
+									<tr>
+										<th>Client Options</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>-f, --file=Path/Dockerfile</code></td>
+										<td>File to use as Dockerfile for build</td>
+									</tr>
+									<tr>
+										<td><code>--force-rm=false</code></td>
+										<td>Force removal of intermediate build containers</td>
+									</tr>
+									<tr>
+										<td><code>--no-cache=false</code></td>
+										<td>Don't make use of the build cache</td>
+									</tr>
+									<tr>
+										<td><code>--pull=false</code></td>
+										<td>Pull newer version of base image if one exists</td>
+									</tr>
+									<tr>
+										<td><code>-q, --quiet=false</code></td>
+										<td>Build the image very quietly</td>
+									</tr>
+									<tr>
+										<td><code>--rm=true</code></td>
+										<td>Remove intermediate containers after successful build</td>
+									</tr>
+									<tr>
+										<td><code>-t, --tag=[]</code></td>
+										<td>Provide image name and tag(s) for newly built image</td>
+									</tr>
+									<tr>
+										<td><code>--build-arg=[]</code></td>
+										<td>Supply variables for the build process</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Image Build Example</h2>
+						</div>
+						<div style="text-align:left">
+							<p>This Dockerfile shows the instructions for creating a simple implementation of the lighttpd http server:</p>
+							<pre><code>FROM debian
+
+RUN apt-get -qq update && \
+    DEBCONF_NOWARNINGS=yes apt-get install -y lighttpd > /dev/null && \
+    rm -rf /var/lib/apt/lists/*
+
+EXPOSE 80
+
+ENTRYPOINT ["lighttpd", "-D", "-f", "/etc/lighttpd/lighttpd.conf"]</code></pre>
+							<p>The image can be built with the following command:</p>
+							<pre><code>$ docker build -t lighttpd .</code></pre>
+							<p>In this example, the build context is empty</p>
+					</div>
+					</section>
+				</section>
+
+				<section id="dockerfile_instructions">
+					<section>
+						<div>
+							<h2>FROM Instruction</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The format of the FROM instruction is:</p>
+							<pre><code class="no-highlight">FROM repository[:tag|@digest]</code></pre>
+							<ul>
+								<li>The FROM instruction must be the <strong>first instruction</strong> in the Dockerfile, aside from comments</li>
+								<li>Specifies the image from which to base the build of the new image</li>
+								<li>The base image must be <strong>fully qualified</strong>, and may also specify a tag or an image digest hash</li>
+								<li>The word <strong>scratch</strong> is a reserved word, and <code>FROM scratch</code> results in a no-op instruction with no new image layer</li>
+						</ul>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>MAINTAINER Instruction</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The format of the MAINTAINER instruction is:</p>
+							<pre><code class="no-highlight">MAINTAINER name</code></pre>
+							<ul>
+								<li>The MAINTAINER instruction sets the <strong>author attribute</strong> for the built Docker image</li>
+								<li>Use of the MAINTAINER instruction is useful for providing a point of reference for an image's adopters</li>
+								<li>The author attribute can be determined with a <strong>docker inspect</strong> query of the built image</li>
+						</ul>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>RUN Instruction</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The formats of the RUN instruction are:</p>
+							<pre><code class="no-highlight">RUN command				# Shell Form
+RUN ["prog", "arg1", "arg2", ...]	# Exec Form</code></pre>
+							<ul>
+								<li>The RUN instruction <strong>executes a command</strong> in a container, and the <strong>diff</strong> becomes a new image layer</li>
+								<li>The shell form uses <strong>'sh -c'</strong> to execute the command</li>
+								<li>Commands can be <strong>daisy-chained</strong> using '&amp;&amp;' for a single RUN instruction, thereby <strong>optimising</strong> image layers</li>
+								<li>A <strong>JSON array</strong> is used for the parameters when using the exec form, which can be used when 'sh' is missing</li>
+							</ul>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>ENV Instruction</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The formats of the ENV instruction are:</p>
+							<pre><code class="no-highlight">ENV key value		# Single key/value definition
+ENV key=value ...	# Multiple key/value definitions</code></pre>
+							<ul>
+								<li>The ENV instruction sets <strong>key/value pairs</strong> for use by all <strong>subsequent</strong> Dockerfile instructions</li>
+								<li>The first form sets a <strong>single</strong> key/value pair, whilst the second form sets <strong>multiple</strong> key/value pairs</li>
+								<li><strong>Certain</strong> Dockerfile instructions can make use of the key/value pairs using shell-like variable <strong>substitution</strong></li>
+								<li>Key value pairs <strong>persist</strong> into any container that is derived from the image, as <strong>environment variables</strong></li>
+							</ul>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>ARG Instruction</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The format of the ARG instruction is:</p>
+							<pre><code class="no-highlight">ARG key[=value]</code></pre>
+							<ul>
+								<li>The ARG instruction sets a key/value pair at <strong>build time</strong></li>
+								<li>Works in conjunction with the <strong>--build-arg</strong> config option</li>
+								<li>Key/value pairs defined by the ARG instruction <strong>do not persist</strong>, and are not available to containers</li>
+								<li>If an ARG instruction and an ENV instruction reference the same key, the value defined by the <strong>ENV instruction overrides</strong></li>
+								<li>ARG and ENV instructions can work in conjunction to enable <strong>dynamic</strong> key/value pair <strong>persistance</strong> in images</li>
+							</ul>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>EXPOSE Instruction</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The format of the EXPOSE instruction is:</p>
+							<pre><code class="no-highlight">EXPOSE port ...</code></pre>
+							<ul>
+								<li>The EXPOSE instruction designates a port(s) on which to <strong>expose</strong> a derived container's <strong>service</strong></li>
+								<li><strong>All ports</strong> defined with the EXPOSE instruction can be <strong>forwarded</strong> to random host ports with the <strong>-P</strong> CLI option</li>
+								<li>The EXPOSE instruction is not required for network-connected containers to consume each other's services</li>
+							</ul>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>VOLUME Instruction</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The formats of the VOLUME instruction are:</p>
+							<pre><code class="no-highlight">VOLUME path ...
+VOLUME ["path1", "path2", ...]</code></pre>
+							<ul>
+								<li>The VOLUME instruction specifies a <strong>mount point</strong> which is used to mount a host directory as a <strong>volume</strong></li>
+								<li>The VOLUME instruction is a <strong>deterministic</strong> means of creating container volumes</li>
+								<li>Any data located at the designated path in the image is <strong>copied to the volume</strong> on the host</li>
+								<li>Any <strong>amendments to data</strong> residing within the image location <strong>after</strong> the VOLUME instruction, will <strong>be lost</strong></li>
+							</ul>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>STOPSIGNAL Instruction</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The format of the STOPSIGNAL instruction is:</p>
+							<pre><code class="no-highlight">STOPSIGNAL signal</code></pre>
+							<ul>
+								<li>The STOPSIGNAL instruction provides Docker with the appropriate <strong>signal</strong> to send to cause a container to <strong>exit</strong></li>
+								<li>By, default <strong>docker stop</strong> sends the <strong>SIGTERM</strong> signal to the container's process</li>
+								<li>An application may be programmed to <strong>handle</strong> a different signal to effect a graceful exit</li>
+								<li>The STOPSIGNAL instruction provides <strong>flexibility</strong> to enable graceful termination</li>
+							</ul>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>LABEL Instruction</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The format of the LABEL instruction is:</p>
+							<pre><code class="no-highlight">LABEL key=value ...</code></pre>
+							<ul>
+								<li>The LABEL instruction enables an image builder to <strong>attach metadata</strong> to an image</li>
+								<li>Labels can be used for <strong>annotating</strong> images, which can be used in image <strong>search and selection</strong></li>
+								<li>The <strong>docker images</strong> CLI command can filter its output based on an image's label metadata</li>
+							</ul>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>WORKDIR Instruction</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The format of the WORKDIR instruction is:</p>
+							<pre><code class="no-highlight">WORKDIR path</code></pre>
+							<ul>
+								<li>The WORKDIR instruction changes the <strong>filesystem context</strong> for subsequent Dockerfile instructions</li>
+								<li>It can be used <strong>multiple</strong> times within a Dockerfile, and can be an <strong>absolute</strong> or <strong>relative</strong> path</li>
+								<li>The WORKDIR instruction is used in conjunction with <strong>ADD, COPY and RUN</strong> instructions during <strong>image build</strong></li>
+								<li>Also used in conjunction with <strong>CMD and ENTRYPOINT</strong> instructions to set the container's <strong>working directory</strong></li>
+							</ul>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>USER Instruction</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The format of the USER instruction is:</p>
+							<pre><code class="no-highlight">USER username|uid</code></pre>
+							<ul>
+								<li>The USER instruction sets the <strong>username or UID</strong> for subsequent <strong>RUN, CMD and ENTRYPOINT</strong> instructions</li>
+								<li>It can be used <strong>multiple</strong> times within a Dockerfile</li>
+								<li>Container processes run as <strong>UID 0</strong> unless the USER instruction is employed to change the default user</li>
+								<li>The USER instruction is often used after a <strong>RUN instruction</strong> has added a user to /etc/passwd</li>
+							</ul>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>COPY Instruction</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The formats of the COPY instruction are:</p>
+							<pre><code class="no-highlight">COPY src ... dest
+COPY ["src"], ... ["dest"]</code></pre>
+							<ul>
+								<li>The COPY instruction <strong>copies files and directories</strong> into the <strong>Docker image</strong></li>
+								<li>The <strong>source</strong> elements must be <strong>relative to</strong>, and <strong>within</strong>, the <strong>build context</strong></li>
+								<li>The <strong>single destination</strong> must be an <strong>absolute path</strong>, or <tsrong>relative</strong> to the <strong>working dir</strong> or <strong>/</strong></li>
+								<li>The source elements can contain <strong>wildcard patterns</strong> as specified by Go <strong>filepath.Match</strong> rules</li>
+							</ul>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>ADD Instruction</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The formats of the ADD instruction are:</p>
+							<pre><code class="no-highlight">ADD src ... dest
+ADD ["src"], ... ["dest"]</code></pre>
+							<ul>
+								<li>The ADD instruction <strong>copies files and directories</strong> into the <strong>Docker image</strong></li>
+								<li>It can also be used to add <strong>remote files</strong> to the image</li>
+								<li>Wherever possible, the <strong>COPY instruction</strong> should be used ahead of the ADD instruction</li>
+								<li>If the source for the ADD instruction is a <strong>local tar archive</strong>, the ADD instruction will <strong>extract</strong> it to the destination</li>
+							</ul>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>CMD Instruction</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The formats of the CMD instruction are:</p>
+							<pre><code class="no-highlight">CMD [“arg1”, “arg2”, ...]
+CMD [“prog”, “arg1”, ...]
+CMD prog arg1 ...</code></pre>
+							<ul>
+								<li>The CMD instruction is used to provide <strong>default execution parameters</strong> for a container</li>
+								<li>The CMD instruction in a Dockerfile can be <strong>overridden</strong> at runtime by the <strong>Docker CLI</strong></li>
+								<li>A Dockerfile should contain only <strong>one</strong> CMD instruction</li>
+								<li>It is generally <strong>recommended</strong> that the <strong>exec form</strong> is used instead of the shell form</li>
+							</ul>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>ENTRYPOINT Instruction</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The formats of the ENTRYPOINT instruction are:</p>
+							<pre><code class="no-highlight">ENTRYPOINT [“prog”, “arg1”, ...]
+ENTRYPOINT prog arg1 ...</code></pre>
+							<ul>
+								<li>The ENTRYPOINT instruction is used to run a container just as if it were an <strong>executable</strong> binary</li>
+								<li><strong>CLI arguments</strong>, or the contents of a <strong>CMD instruction</strong>, are <strong>appended</strong> to the container's entrypoint</li>
+								<li>All arguments provided via the CLI or CMD instruction, are <strong>ignored</strong> with the use of the <strong>shell form</strong></li>
+								<li>The CLI config option <strong>--entrypoint</strong> can be used to <strong>override</strong> the entrypoint, invoking the <strong>exec format</strong></li>
+							</ul>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>ENTRYPOINT &amp; CMD</h2>
+						</div>
+						<div style="width:100%">
+							<img src="media/Entrypoint_Cmd.svg" alt="ENTRYPOINT &amp; CMD Instructions" />
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Entrypoint Scripts</h2>
+						</div>
+						<div  style="text-align:left">
+							<ul>
+								<li>Using <strong>entrypoint scripts</strong> is considered good practice, and caters for <strong>multiple use scenarios</strong></li>
+								<li>The <strong>official Redis image</strong> has an entrypoint script with a default argument provided by a CMD intsruction:</li>
+							</ul>
+							<pre><code class="no-highlight">ENTRYPOINT ["/entrypoint.sh"]
+CMD ["redis-server"]</code></pre>
+							<ul>
+								<li>Entrypoint script for Redis image:</li>
+							</ul>
+							<pre><code class="no-highlight">#!/bin/bash
+set -e
+
+if [ "$1" = 'redis-server' ]; then
+	chown -R redis .
+	exec gosu redis "$@"
+fi
+
+exec "$@"</code></pre>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Redis Scenario 1</h2>
+						</div>
+						<div  style="text-align:left">
+							<pre><code class="no-highlight">#!/bin/bash
+set -e
+
+if [ "$1" = 'redis-server' ]; then
+	chown -R redis .
+	exec gosu redis "$@"
+fi
+
+exec "$@"</code></pre>
+							<p>Container Execution:</p>
+							<pre><code class="no-highlight"># Command executed -> entrypoint.sh redis-server
+$ docker run -d redis</code></pre>
+							<ul>
+								<li>Docker uses the argument provided by the CMD instruction, <strong>redis-server</strong></li>
+								<li>Changes file ownership, executes redis-server as user redis in container, and with <strong>PID 1</strong></li>
+							</ul>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Redis Scenario 2</h2>
+						</div>
+						<div  style="text-align:left">
+							<pre><code class="no-highlight">#!/bin/bash
+set -e
+
+if [ "$1" = 'redis-server' ]; then
+	chown -R redis .
+	exec gosu redis "$@"
+fi
+
+exec "$@"</code></pre>
+							<p>Container Execution:</p>
+							<pre><code class="no-highlight"># Command executed -> entrypoint.sh redis-server --appendonly yes
+$ docker run -d redis redis-server --appendonly yes</code></pre>
+							<ul>
+								<li>Docker uses the arguments provided by the Docker CLI command, <strong>redis-server --appendonly yes</strong></li>
+								<li>Again, changes file ownership, executes redis-server as user redis in container, and with <strong>PID 1</strong></li>
+							</ul>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>Redis Scenario 3</h2>
+						</div>
+						<div  style="text-align:left">
+							<pre><code class="no-highlight">#!/bin/bash
+set -e
+
+if [ "$1" = 'redis-server' ]; then
+	chown -R redis .
+	exec gosu redis "$@"
+fi
+
+exec "$@"</code></pre>
+							<p>Container Execution:</p>
+							<pre><code class="no-highlight"># Command executed -> entrypoint.sh /bin/bash
+$ docker run -it --rm redis /bin/bash</code></pre>
+							<ul>
+								<li>Docker uses the arguments provided by the Docker CLI command, <strong>/bin/bash</strong></li>
+								<li>The test for redis-server <strong>fails</strong>, so the script falls through to last line and executes its argument as <strong>PID 1</strong></li>
+							</ul>
+						</div>
+					</section>
+
+					<section>
+						<div>
+							<h2>ONBUILD Instruction</h2>
+						</div>
+						<div  style="text-align:left">
+							<p>The format of the ONBUILD instruction is:</p>
+							<pre><code class="no-highlight">ONBUILD instruction</code></pre>
+							<ul>
+								<li>The ONBUILD instruction sets a <strong>deferred trigger</strong> to execute a Dockerfile instruction <strong>at a later point in time</strong></li>
+								<li>The deferred instruction is executed in a <strong>build</strong> for an <strong>image derived</strong> from the current image</li>
+								<li>ONBUILD instructions are executed at the same time as the <strong>FROM instruction</strong> is executed</li>
+								<li>All Dockerfile instructions can be the recipient of the ONBUILD instruction, except the <strong>FROM, MAINTAINER and ONBUILD</strong> instructions</li>
+							</ul>
+						</div>
+					</section>
+				</section>
+
+
+				<section>
+					<div>
+						<h2>The Build Cache</h2>
+					</div>
+					<div style="width:100%">
+						<img src="media/Build_Cache.svg" alt="The Build Cache" />
+					</div>
+				</section>
+
+				<section>
+					<img src="media/Lab_Exercise.svg" alt="Lab Exercise" />
+					<h3>Lab Exercise:</h3>
+					<h3>Building an Image With a Dockerfile</h3>
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: false,
+                // slideNumber: 'h.v',
+				progress: false,
+				history: true,
+				center: true,
+
+				transition: 'fade', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
