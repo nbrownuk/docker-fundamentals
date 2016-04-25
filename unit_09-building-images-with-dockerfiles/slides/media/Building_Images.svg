@@ -24,7 +24,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -44,7 +44,7 @@
      id="namedview3057"
      showgrid="false"
      inkscape:zoom="1.3350176"
-     inkscape:cx="129.37396"
+     inkscape:cx="130.87207"
      inkscape:cy="242.79082"
      inkscape:window-x="0"
      inkscape:window-y="0"
@@ -68,15 +68,15 @@
        id="tspan3067"
        x="252.88499"
        y="218.8"
-       style="font-size:48px;line-height:100%;fill:#ffffff;fill-opacity:1">Unit 10</tspan><tspan
+       style="font-size:48px;line-height:100%;fill:#ffffff;fill-opacity:1">Unit 9</tspan><tspan
        sodipodi:role="line"
        x="252.88499"
-       y="266.80002"
+       y="266.79999"
        style="font-size:48px;line-height:100%;fill:#ffffff;fill-opacity:1"
        id="tspan3014">Building Images</tspan><tspan
        sodipodi:role="line"
        x="252.88499"
-       y="314.80002"
+       y="314.79999"
        style="font-size:48px;line-height:100%;fill:#ffffff;fill-opacity:1"
        id="tspan3039">With Dockerfiles</tspan></text>
 </svg>
